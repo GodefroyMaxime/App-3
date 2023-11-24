@@ -2,6 +2,11 @@
 
 {% block title %}InfoCollaborators index{% endblock %}
 
+{% block javascripts %}
+    {{ encore_entry_script_tags('trame2') }}
+{% endblock %}
+
+
 {% block body %}
     <h1>InfoCollaborators index</h1>
 
@@ -47,9 +52,13 @@
                 <td>{{ info_collaborator.employerSharePension }}</td>
                 <td>{{ info_collaborator.csp }}</td>
                 <td>
-                    <a href="{{ path('app_info_collaborators_show', {'id': info_collaborator.id}) }}">show</a>
-                    <a href="{{ path('app_info_collaborators_edit', {'id': info_collaborator.id}) }}">edit</a>
+                    <a href="{{ path('app_info_collaborators_read_only_show', {'id': info_collaborator.id}) }}">show</a>
+                    <button type="button" id="generateChartImage" class="btn btn-primary" data-toggle="button" aria-pressed="false" autocomplete="off">Générer les graphiques</button>
                 </td>
+            </tr>
+            <tr>
+                <td id="chart1"></td>
+                <td id="chart2"></td>
             </tr>
         {% else %}
             <tr>
@@ -58,6 +67,4 @@
         {% endfor %}
         </tbody>
     </table>
-
-    <a href="{{ path('app_info_collaborators_new') }}">Create new</a>
 {% endblock %}

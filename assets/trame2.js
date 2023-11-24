@@ -41,7 +41,7 @@ function chartToImage (nbChart, total) {
     return new Promise(function(resolve3, reject3) {
         Plotly.toImage("chart1", {format: 'png'}).then(function (dataURL) {
             $.ajax({
-                url: '/trame/donwloadChartImage',
+                url: '/infoCollaboratorsRO/donwloadChartImage',
                 method: 'POST',
                 data: {
                     image: dataURL,
@@ -52,21 +52,6 @@ function chartToImage (nbChart, total) {
                 },
             });
         });
-        
-        progressBar(nbChart, total).then(
-            function() {
-                resolve3();
-            }
-        );
-    });
-}
-
-
-function progressBar (iteration, total) {
-    return new Promise(function(resolve4, reject4) {
-        var progressBar = Math.round($('.progress').length/total*iteration*100*100)/100;
-        document.getElementById("progress-bar-chart").style.width = progressBar + "%";
-        $("#progress-bar-chart").text(progressBar + "%");
     });
 }
 

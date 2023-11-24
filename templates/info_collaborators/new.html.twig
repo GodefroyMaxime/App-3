@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New InfoCollaborators{% endblock %}
+
+{% block body %}
+    <h1>Create new InfoCollaborators</h1>
+
+    {{ include('info_collaborators/_form.html.twig') }}
+
+    <a href="{{ path('app_info_collaborators_index') }}">back to list</a>
+{% endblock %}

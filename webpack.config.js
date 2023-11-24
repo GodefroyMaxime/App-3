@@ -24,6 +24,8 @@ Encore
 
     .addEntry('trame', './assets/trame.js')
 
+    .addEntry('trame2', './assets/trame2.js')
+
     // When enabled, Webpack "splits" your files into smaller pieces for greater optimization.
     .splitEntryChunks()
 
