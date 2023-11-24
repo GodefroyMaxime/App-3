@@ -22,10 +22,12 @@ class TrameController extends AbstractController
     public function donwloadChartImage(Request $request, ChartService $chart): Response
     {
         $dataImage = $request->request->get('image'); 
-        $number = $request->request->get('number'); 
-        $chart->downloadDataImage($dataImage, 'chartImage', 'test'.$number, 'png');
-        return $this->render('trame/index.html.twig', [
-            'controller_name' => 'TrameController',
-        ]);
+        $number = $request->request->get('nbChart'); 
+        
+        return new Response(
+            $chart->downloadDataImage($dataImage, 'chartImage', 'test'.$number, 'png'),
+            Response::HTTP_OK,
+            ['Content-Type' => 'application/image']
+        );
     }
 }
