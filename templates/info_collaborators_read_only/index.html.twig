@@ -8,57 +8,63 @@
 
 
 {% block body %}
+    <style>
+        .infoSup {
+            display: none;
+        }
+    </style>
+
     <h1>InfoCollaborators index</h1>
 
     <table class="table">
         <thead>
             <tr>
-                <th>Id</th>
                 <th>Matricule</th>
                 <th>Name</th>
                 <th>Firstname</th>
                 <th>Position</th>
                 <th>Seniority</th>
-                <th>Gross_annual_salary</th>
-                <th>Net_annual_salary</th>
-                <th>Bonus</th>
-                <th>Employee_share_mutual_insurance</th>
-                <th>Employer_share_mutual_insurance</th>
-                <th>Employee_share_health_insurance</th>
-                <th>Employer_share_health_insurance</th>
-                <th>Employee_share_pension</th>
-                <th>Employer_share_pension</th>
-                <th>Csp</th>
+                <th class="infoSup">Gross_annual_salary</th>
+                <th class="infoSup">Net_annual_salary</th>
+                <th class="infoSup">Bonus</th>
+                <th class="infoSup">Employee_share_mutual_insurance</th>
+                <th class="infoSup">Employer_share_mutual_insurance</th>
+                <th class="infoSup">Employee_share_health_insurance</th>
+                <th class="infoSup">Employer_share_health_insurance</th>
+                <th class="infoSup">Employee_share_pension</th>
+                <th class="infoSup">Employer_share_pension</th>
+                <th class="infoSup">Csp</th>
                 <th>actions</th>
             </tr>
         </thead>
         <tbody>
         {% for info_collaborator in info_collaborators %}
-            <tr>
-                <td>{{ info_collaborator.id }}</td>
-                <td>{{ info_collaborator.matricule }}</td>
+            <tr class="information" data-json="{{ info_collaborator|serialize(format = 'json') }}">
+                <td><b>{{ info_collaborator.matricule }}</b></td>
                 <td>{{ info_collaborator.name }}</td>
                 <td>{{ info_collaborator.firstname }}</td>
                 <td>{{ info_collaborator.position }}</td>
                 <td>{{ info_collaborator.seniority ? info_collaborator.seniority|date('Y-m-d') : '' }}</td>
-                <td>{{ info_collaborator.grossAnnualSalary }}</td>
-                <td>{{ info_collaborator.netAnnualSalary }}</td>
-                <td>{{ info_collaborator.bonus }}</td>
-                <td>{{ info_collaborator.employeeShareMutualInsurance }}</td>
-                <td>{{ info_collaborator.employerShareMutualInsurance }}</td>
-                <td>{{ info_collaborator.employeeShareHealthInsurance }}</td>
-                <td>{{ info_collaborator.employerShareHealthInsurance }}</td>
-                <td>{{ info_collaborator.employeeSharePension }}</td>
-                <td>{{ info_collaborator.employerSharePension }}</td>
-                <td>{{ info_collaborator.csp }}</td>
+                <td class="infoSup">{{ info_collaborator.grossAnnualSalary }}</td>
+                <td class="infoSup">{{ info_collaborator.netAnnualSalary }}</td>
+                <td class="infoSup">{{ info_collaborator.bonus }}</td>
+                <td class="infoSup">{{ info_collaborator.employeeShareMutualInsurance }}</td>
+                <td class="infoSup">{{ info_collaborator.employerShareMutualInsurance }}</td>
+                <td class="infoSup">{{ info_collaborator.employeeShareHealthInsurance }}</td>
+                <td class="infoSup">{{ info_collaborator.employerShareHealthInsurance }}</td>
+                <td class="infoSup">{{ info_collaborator.employeeSharePension }}</td>
+                <td class="infoSup">{{ info_collaborator.employerSharePension }}</td>
+                <td class="infoSup">{{ info_collaborator.csp }}</td>
                 <td>
                     <a href="{{ path('app_info_collaborators_read_only_show', {'id': info_collaborator.id}) }}">show</a>
-                    <button type="button" id="generateChartImage" class="btn btn-primary" data-toggle="button" aria-pressed="false" autocomplete="off">Générer les graphiques</button>
+                    <button type="button" id="generateChartImage{{ info_collaborator.matricule }}" class="btn btn-primary" data-toggle="button" aria-pressed="false" autocomplete="off">Générer les graphiques</button>
+                    <button type="button" id="generateBSI{{ info_collaborator.matricule }}" class="btn btn-primary" data-toggle="button" aria-pressed="false" autocomplete="off">Générer le BSI</button>
                 </td>
             </tr>
             <tr>
-                <td id="chart1"></td>
-                <td id="chart2"></td>
+                <td id="piechart{{ info_collaborator.matricule }}"></td>
+                <td id="barchart{{ info_collaborator.matricule }}"></td>
+                <td id="pie2chart{{ info_collaborator.matricule }}"></td>
             </tr>
         {% else %}
             <tr>
@@ -67,4 +73,7 @@
         {% endfor %}
         </tbody>
     </table>
+    <button type="button" id="btnInfoSup" class="btn btn-primary" data-toggle="button" aria-pressed="false" autocomplete="off">Afficher plus d'information</button>
+    <button type="button" id="generateAllChartImage" class="btn btn-primary" data-toggle="button" aria-pressed="false" autocomplete="off">Générer tout les graphiques</button>
+    <button type="button" id="generateAllBSI" class="btn btn-primary" data-toggle="button" aria-pressed="false" autocomplete="off">Générer tout les BSI</button>
 {% endblock %}
