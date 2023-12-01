@@ -15,8 +15,7 @@
     </style>
 
     <h1>InfoCollaborators index</h1>
-
-    <table class="table">
+    <table class="table" data-collaboratorsjson="{{ info_collaborators|serialize(format = 'json') }}">
         <thead>
             <tr>
                 <th>Matricule</th>
@@ -39,7 +38,7 @@
         </thead>
         <tbody>
         {% for info_collaborator in info_collaborators %}
-            <tr class="information" data-json="{{ info_collaborator|serialize(format = 'json') }}">
+            <tr class="information" data-collaboratorjson="{{ info_collaborator|serialize(format = 'json') }}">
                 <td><b>{{ info_collaborator.matricule }}</b></td>
                 <td>{{ info_collaborator.name }}</td>
                 <td>{{ info_collaborator.firstname }}</td>
@@ -76,4 +75,5 @@
     <button type="button" id="btnInfoSup" class="btn btn-primary" data-toggle="button" aria-pressed="false" autocomplete="off">Afficher plus d'information</button>
     <button type="button" id="generateAllChartImage" class="btn btn-primary" data-toggle="button" aria-pressed="false" autocomplete="off">Générer tout les graphiques</button>
     <button type="button" id="generateAllBSI" class="btn btn-primary" data-toggle="button" aria-pressed="false" autocomplete="off">Générer tout les BSI</button>
+    <button type="button" id="generateOneBSI" class="btn btn-primary" data-toggle="button" aria-pressed="false" autocomplete="off">Générer tout les BSI sur un PDF</button>
 {% endblock %}

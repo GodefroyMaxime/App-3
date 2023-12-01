@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>BSI_Lyreco</title>
+    </head>
+    <style>
+        body {
+            background-color: lightgray;
+        }
+
+        .page {
+            border: 5px solid black;
+            width: 100%;
+            height: 98.25%;
+        }
+
+        .demiPage {
+            border: 5px solid black;
+            width: 50%;
+        }
+
+        img {
+            width: 40%;
+        }
+    </style>
+    <body> 
+        <main>
+            {% for key, info_collaborator in info_collaborators %}
+                <table class="page">
+                    <tr>
+                        <td class="demiPage">
+                            <h2>1</h2>
+                            <section>
+                                <h2>Votre situation professionnelle en 2023</h2>
+                                <p>
+                                    Votre date d'entrée est le {{ info_collaborator.seniority|format_datetime('medium','none', locale='fr') }} 
+                                    Vous justifiez d'une ancienneté de {{ date(info_collaborator.seniority).diff(date()).y }} ans
+                                </p>
+                                <p>
+                                    Votre fonction est {{ info_collaborator.position }}
+                                    Vous relevez du statut {{ info_collaborator.csp }}
+                                </p>
+                            </section>
+                            <section>
+                                <h2>Votre rémunération individuelle en 2023</h2>
+                                <table>
+                                    <tr>
+                                        <td>Rémunération fixe :</td>
+                                        <td>Salaire de base</td>
+                                        <td>{{ info_collaborator.grossAnnualSalary }} €</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Rémunération variable :</td>
+                                        <td>Bonus</td>
+                                        <td>{{ info_collaborator.bonus }} €</td>
+                                    </tr>
+                                </table>
+                                <img src="{{ absolute_url(info_collaborator.pieChartSalaire) }}" alt="Image">
+                                <p>
+                                    {{ info_collaborator.firstname }} + {{ info_collaborator.name }}
+                                </p>
+                                <p>Total brut annuel 2023 : {{ info_collaborator.grossAnnualSalary + info_collaborator.bonus }} €</p>
+                            </section>
+                        </td>
+                        <td class="demiPage">
+                            <h2>2</h2>
+                            <section>
+                                <h2>Vos cotisations sociales</h2>
+                                <p>
+                                    Les cotisations sociales sont l'ensemble des charges supportées par l'employeur et par le salarié et servant à financer les divers dispositifs et organismes publics chargés de la protection sociale : Sécurité sociale (assurance maladie, retraite), accidents du travail, allocations familiales, chômage, retraite complémentaire, mutuelle, prévoyance.
+                                </p>
+                                <h4>Répartition des cotisations sociales</h4>
+                                <img src="{{ absolute_url(info_collaborator.barChartProtection) }}"></img>
+                                <img src="{{ absolute_url(info_collaborator.pieChartProtection) }}"></img>
+                            </section>
+                            <section>
+                                <h2>Votre épargne salariale</h2>
+                                <p>
+                                    En 2023, vous avez bénéficié de {{ info_collaborator.bonus }} € au titre de la participation.
+                                </p>
+                            </section>
+                        </td>
+                    </tr>
+                </table>
+                <table class="page">
+                    <tr>
+                        <td class="demiPage">
+                            <h2>3</h2>
+                            <section>
+                                <h2>Votre situation professionnelle en 2023</h2>
+                                <p>
+                                    Votre date d'entrée est le {{ info_collaborator.seniority|format_datetime('medium','none', locale='fr') }} 
+                                    Vous justifiez d'une ancienneté de {{ date(info_collaborator.seniority).diff(date()).y }} ans
+                                </p>
+                                <p>
+                                    Votre fonction est {{ info_collaborator.position }}
+                                    Vous relevez du statut {{ info_collaborator.csp }}
+                                </p>
+                            </section>
+                            <section>
+                                <h2>Votre rémunération individuelle en 2023</h2>
+                                <table>
+                                    <tr>
+                                        <td>Rémunération fixe :</td>
+                                        <td>Salaire de base</td>
+                                        <td>{{ info_collaborator.grossAnnualSalary }} €</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Rémunération variable :</td>
+                                        <td>Bonus</td>
+                                        <td>{{ info_collaborator.bonus }} €</td>
+                                    </tr>
+                                </table>
+                                <img src="{{ absolute_url(info_collaborator.pieChartSalaire) }}" alt="Image">
+                                <p>
+                                    {{ info_collaborator.firstname }} + {{ info_collaborator.name }}
+                                </p>
+                                <p>Total brut annuel 2023 : {{ info_collaborator.grossAnnualSalary + info_collaborator.bonus }} €</p>
+                            </section>
+                        </td>
+                        <td class="demiPage">
+                            <h2>4</h2>
+                            <section>
+                                <h2>Vos cotisations sociales</h2>
+                                <p>
+                                    Les cotisations sociales sont l'ensemble des charges supportées par l'employeur et par le salarié et servant à financer les divers dispositifs et organismes publics chargés de la protection sociale : Sécurité sociale (assurance maladie, retraite), accidents du travail, allocations familiales, chômage, retraite complémentaire, mutuelle, prévoyance.
+                                </p>
+                                <h4>Répartition des cotisations sociales</h4>
+                                <img src="{{ absolute_url(info_collaborator.barChartProtection) }}"></img>
+                                <img src="{{ absolute_url(info_collaborator.pieChartProtection) }}"></img>
+                            </section>
+                            <section>
+                                <h2>Votre épargne salariale</h2>
+                                <p>
+                                    En 2023, vous avez bénéficié de {{ info_collaborator.bonus }} € au titre de la participation.
+                                </p>
+                            </section>
+                        </td>
+                    </tr>
+                </table>
+            {% endfor %}
+        </main>
+    </body>
+</html>

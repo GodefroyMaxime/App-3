@@ -1,11 +1,11 @@
 import Plotly from 'plotly.js-dist-min'
 
-function calculatePercentage(x, y) {
+function calculatePercentage (x, y) {
     return (x*100)/(x*1+y*1);
 }
 
-function generateChart(info) {
-    return new Promise(function(resolve2, reject2) {
+function generateChart (info) {
+    return new Promise(function(resolveGenerate, rejectGenerate) {
 
         //Graph 1
         var totalBrut = (info.bonus)*1+(info.grossAnnualSalary)*1;
@@ -51,7 +51,7 @@ function generateChart(info) {
             text: [info.employerSharePension+' €', info.employerShareHealthInsurance+' €', info.employerShareMutualInsurance+' €'],
             textposition: 'inside', 
             insidetextanchor: 'middle',
-            name: 'Employeur                                                ',
+            name: 'Employeur',
             orientation: 'h',
             marker: {
                 color: 'rgb(45, 46, 135)',
@@ -110,14 +110,11 @@ function generateChart(info) {
         );
         
         //Graph 3
-        var totalProtectionEmployerPercent = (calculatePercentage(info.employerSharePension,info.employeeSharePension)+calculatePercentage(info.employerShareHealthInsurance,info.employeeShareHealthInsurance)+calculatePercentage(info.employerShareMutualInsurance,info.employeeShareMutualInsurance))/3;
-        var totalProtectionEmployeePercent = (calculatePercentage(info.employeeSharePension,info.employerSharePension)+calculatePercentage(info.employeeShareHealthInsurance,info.employerShareHealthInsurance)+calculatePercentage(info.employeeShareMutualInsurance,info.employerShareMutualInsurance))/3;
-
         var totalProtectionEmployer = (info.employerSharePension*1+info.employerShareHealthInsurance*1+info.employerShareMutualInsurance*1);
         var totalProtectionEmployee = (info.employeeSharePension*1+info.employeeShareHealthInsurance*1+info.employeeShareMutualInsurance*1);
 
         var data3 = [{
-            values: [totalProtectionEmployerPercent, totalProtectionEmployeePercent],
+            values: [totalProtectionEmployer, totalProtectionEmployee],
             labels: [totalProtectionEmployer+' €<br>Employeur', totalProtectionEmployee+' €<br>Salarié'],
             textinfo: "label+percent",
             hoverinfo: 'label+percent',
@@ -145,16 +142,14 @@ function generateChart(info) {
             layout3,
         )
         
-        chartToImage(info).then(
-            function() {
-                resolve2();
-            }
-        );
+        chartToImage(info).then(function () {
+            resolveGenerate();
+        });
     });
 }
 
 function chartToImage (info) {
-    return new Promise(function(resolve3, reject3) {
+    return new Promise(function(resolveImage, rejectImage) {
         Plotly.toImage('piechart'+info.matricule, {format: 'png'}).then(function (dataURL1) {
             Plotly.toImage('barchart'+info.matricule, {format: 'png'}).then(function (dataURL2) {
                 Plotly.toImage('pie2chart'+info.matricule, {format: 'png'}).then(function (dataURL3) {
@@ -168,7 +163,7 @@ function chartToImage (info) {
                             matricule: info.matricule, 
                         },
                         success: function () {
-                            resolve3();
+                            resolveImage();
                         },
                     });
                 });
@@ -177,21 +172,206 @@ function chartToImage (info) {
     });
 }
 
-$(function() {
-    let promise = Promise.resolve();
+function reloadGenerateChartImages (BSI, infos) {
+    const promises = infos.map(info => generateChart(info));
     
-    $(".information").each(function (e) {
-        var info = $(this).data('json');
-        //console.log(info);
-        $("#generateChartImage"+info.matricule).on( "click", function() {
-            promise = promise.then(() => generateChart(info))
+    return Promise.all(promises)
+        .then(() => {
+            return $.ajax(BSI);
         });
-        $("#generateAllChartImage").on( "click", function() {
-            promise = promise.then(() => generateChart(info))
+}
+
+$(function() {
+    $(".information").each(function (e) {
+        var info = $(this).data('collaboratorjson');
+
+        $("#generateChartImage"+info.matricule).on( "click", function () {
+            generateChart(info);
+        });
+           
+
+        $("#generateBSI"+info.matricule).on( "click", function () {
+            $.ajax({
+                url: '/bsi/'+info.matricule,
+                method: 'POST',
+                data: {
+                    infos: JSON.stringify(info),
+                },
+                xhrFields: {
+                    responseType: 'blob'            
+                },
+                success: function (response, status, xhr) {
+                    var filename = "test";
+                    var disposition = xhr.getResponseHeader('Content-Disposition');
+
+                    if (disposition) {
+                        var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                        var matches = filenameRegex.exec(disposition);
+                        if (matches !== null && matches[1]) filename = matches[1].replace(/['"]/g, '');
+                    }                 
+                    try {
+                        var blob = new Blob([response], { type: 'application/octet-stream' });
+                        if (typeof window.navigator.msSaveBlob !== 'undefined') {
+                            //   IE workaround for "HTML7007: One or more blob URLs were revoked by closing the blob for which they were created. These URLs will no longer resolve as the data backing the URL has been freed."                        window.navigator.msSaveBlob(blob, filename);
+                        } else {
+                            var URL = window.URL || window.webkitURL;
+                            var downloadUrl = URL.createObjectURL(blob);
+
+                            if (filename) { 
+                                // use HTML5 a[download] attribute to specify filename                            
+                                var a = document.createElement("a");
+
+                                // safari doesn't support this yet                            
+                                if (typeof a.download === 'undefined') {
+                                    window.location = downloadUrl;
+                                } else {
+                                    a.href = downloadUrl;
+                                    a.download = filename;
+                                    document.body.appendChild(a);
+                                    a.target = "_blank";
+                                    a.click();
+                                }
+                            } else {
+                                window.location = downloadUrl;
+                            }
+                        }   
+
+                    } catch (ex) {
+                        console.log(ex);
+                    } 
+                },
+                error: function () {
+                    reloadGenerateChartImages(this, [info]);
+                }
+            });
+        });
+    });
+    
+    $("#generateAllChartImage").on( "click", function () {
+        $(".information").each(function (e) {
+            var info = $(this).data('collaboratorjson');
+            generateChart(info);
         });
     });
 
-    $("#btnInfoSup").on( "click", function() {
+    $("#generateAllBSI").on( "click", function () {
+        $(".information").each(function (e) {
+            var info = $(this).data('collaboratorjson');
+
+            $.ajax({
+                url: '/bsi/'+info.matricule,
+                method: 'POST',
+                data: {
+                    infos: JSON.stringify(info),
+                },
+                xhrFields: {
+                    responseType: 'blob'            
+                },
+                success: function (response, status, xhr) {
+                    var filename = "test";
+                    var disposition = xhr.getResponseHeader('Content-Disposition');
+
+                    if (disposition) {
+                        var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                        var matches = filenameRegex.exec(disposition);
+                        if (matches !== null && matches[1]) filename = matches[1].replace(/['"]/g, '');
+                    }                 
+                    try {
+                        var blob = new Blob([response], { type: 'application/octet-stream' });
+                        if (typeof window.navigator.msSaveBlob !== 'undefined') {
+                            //   IE workaround for "HTML7007: One or more blob URLs were revoked by closing the blob for which they were created. These URLs will no longer resolve as the data backing the URL has been freed."                        window.navigator.msSaveBlob(blob, filename);
+                        } else {
+                            var URL = window.URL || window.webkitURL;
+                            var downloadUrl = URL.createObjectURL(blob);
+
+                            if (filename) { 
+                                // use HTML5 a[download] attribute to specify filename                            
+                                var a = document.createElement("a");
+
+                                // safari doesn't support this yet                            
+                                if (typeof a.download === 'undefined') {
+                                    window.location = downloadUrl;
+                                } else {
+                                    a.href = downloadUrl;
+                                    a.download = filename;
+                                    document.body.appendChild(a);
+                                    a.target = "_blank";
+                                    a.click();
+                                }
+                            } else {
+                                window.location = downloadUrl;
+                            }
+                        }   
+
+                    } catch (ex) {
+                        console.log(ex);
+                    } 
+                },
+                error: function () {
+                    reloadGenerateChartImages(this, [info]);
+                }
+            });
+        });
+    });
+
+    $("#generateOneBSI").on( "click", function () {
+        var infos = $(".table").data('collaboratorsjson');
+        $.ajax({
+            url: '/AllBSI',
+            method: 'POST',
+            data: {
+                infos: JSON.stringify(infos),
+            },
+            xhrFields: {
+                responseType: 'blob'            
+            },
+            success: function (response, status, xhr) {
+                var filename = "test";
+                var disposition = xhr.getResponseHeader('Content-Disposition');
+
+                if (disposition) {
+                    var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                    var matches = filenameRegex.exec(disposition);
+                    if (matches !== null && matches[1]) filename = matches[1].replace(/['"]/g, '');
+                }                 
+                try {
+                    var blob = new Blob([response], { type: 'application/octet-stream' });
+                    if (typeof window.navigator.msSaveBlob !== 'undefined') {
+                        //   IE workaround for "HTML7007: One or more blob URLs were revoked by closing the blob for which they were created. These URLs will no longer resolve as the data backing the URL has been freed."                        window.navigator.msSaveBlob(blob, filename);
+                    } else {
+                        var URL = window.URL || window.webkitURL;
+                        var downloadUrl = URL.createObjectURL(blob);
+
+                        if (filename) { 
+                            // use HTML5 a[download] attribute to specify filename                            
+                            var a = document.createElement("a");
+
+                            // safari doesn't support this yet                            
+                            if (typeof a.download === 'undefined') {
+                                window.location = downloadUrl;
+                            } else {
+                                a.href = downloadUrl;
+                                a.download = filename;
+                                document.body.appendChild(a);
+                                a.target = "_blank";
+                                a.click();
+                            }
+                        } else {
+                            window.location = downloadUrl;
+                        }
+                    }   
+
+                } catch (ex) {
+                    console.log(ex);
+                } 
+            },
+            error: function () {
+                reloadGenerateChartImages(this, infos);
+            }
+        });
+    });
+
+    $("#btnInfoSup").on( "click", function () {
         var button = $(this);
         button.text(button.text() == "Afficher plus d'information" ? "Afficher moins d'information" : "Afficher plus d'information");
         $(".infoSup").each (function (e) {
