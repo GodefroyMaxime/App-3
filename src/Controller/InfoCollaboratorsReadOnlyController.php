@@ -89,7 +89,10 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
     #[Route('/AllBSI', name: 'app_info_collaborators_read_only_all_bsi', methods: ['POST'])]
     public function allbsi(PDFService $pdf, BSIService $bsi, Request $request): Response
     {        
-        $infos = json_decode($request->request->get('infos'), true);
+        set_time_limit(50000);
+        ini_set('memory_limit', '1000M');
+        
+        $infos = json_decode($request->request->get('infos'), true); 
         $info_collaborators = $bsi->addPathChartImageTable($infos);
         $chart = [];
         foreach ($info_collaborators as $key => $value) {
@@ -106,7 +109,7 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
         }
 
         $html = $this->renderView('info_collaborators_read_only/bsi.html.twig', [
-            'info_collaborators' => $info_collaborators,
+            'info_collaborators' => $info_collaborators, 
         ]);  
 
         if (in_array(false, $chart)) {
