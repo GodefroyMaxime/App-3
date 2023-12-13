@@ -89,8 +89,8 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
     #[Route('/AllBSI', name: 'app_info_collaborators_read_only_all_bsi', methods: ['POST'])]
     public function allbsi(PDFService $pdf, BSIService $bsi, Request $request): Response
     {        
-        set_time_limit(50000);
-        ini_set('memory_limit', '1000M');
+        set_time_limit(0);
+        ini_set('memory_limit', '10000M');
         
         $infos = json_decode($request->request->get('infos'), true); 
         $info_collaborators = $bsi->addPathChartImageTable($infos);
