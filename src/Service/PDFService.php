@@ -7,16 +7,12 @@ use Dompdf\Options;
 
 class PDFService
 {
-    public function generatePDF($orientation, $html, $title = "default") {
+    public function generatePDF($orientation, $html, $title = "default", $size = "A4") {
         $options = new Options();
         $options->setIsRemoteEnabled(true);
         $pdf = new Dompdf($options);
 
-        if ($orientation == "landscape") {
-            $pdf->setPaper('A4', 'landscape');
-        } else {
-            $pdf->setPaper('A4', 'portrait');
-        }
+        $pdf->setPaper($size, $orientation);
 
         $pdf->loadHtml($html);
         $pdf->render();

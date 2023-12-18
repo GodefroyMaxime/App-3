@@ -81,7 +81,7 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
              return new Response('Image manquante',Response::HTTP_INTERNAL_SERVER_ERROR);
         } else {
             return new Response(
-                $pdf->generatePDF("landscape", $html, 'BSI_'.$matricule),
+                $pdf->generatePDF("landscape", $html, 'BSI_'.$matricule, "A4"),
                 Response::HTTP_OK,
                 ['Content-Type' => 'application/pdf']
             );
@@ -117,7 +117,7 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
              return new Response('Image manquante',Response::HTTP_INTERNAL_SERVER_ERROR);
         } else {
             return new Response(
-                $pdf->generatePDF("landscape", $html, 'AllBSI'),
+                $pdf->generatePDF("landscape", $html, 'AllBSI', "A4"),
                 Response::HTTP_OK,
                 ['Content-Type' => 'application/pdf']
             );
