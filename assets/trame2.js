@@ -108,7 +108,7 @@ function generateChart (info) {
             data2,
             layout2,
         );
-        
+
         //Graph 3
         var totalProtectionEmployer = (info.employerSharePension*1+info.employerShareHealthInsurance*1+info.employerShareMutualInsurance*1);
         var totalProtectionEmployee = (info.employeeSharePension*1+info.employeeShareHealthInsurance*1+info.employeeShareMutualInsurance*1);
@@ -123,7 +123,7 @@ function generateChart (info) {
                   'rgb(45, 46, 135)',
                   'rgb(154, 195, 28)',
                 ],
-            },
+            }, 
             type: 'pie',
         }];
     
@@ -142,7 +142,7 @@ function generateChart (info) {
             layout3,
         )
         
-        chartToImage(info).then(function () {
+        chartToImage(info).then(function() {
             resolveGenerate();
         });
     });
@@ -182,7 +182,7 @@ function reloadGenerateChartImages (BSI, infos) {
 }
 
 $(function() {
-    $(".information").each(function (e) {
+    $(".information").each(function () {
         var info = $(this).data('collaboratorjson');
 
         $("#generateChartImage"+info.matricule).on( "click", function () {
@@ -245,19 +245,12 @@ $(function() {
                 }
             });
         });
-    });
-    
-    $("#generateAllChartImage").on( "click", function () {
-        $(".information").each(function (e) {
-            var info = $(this).data('collaboratorjson');
+        
+        $("#generateAllChartImage").on( "click", function () {
             generateChart(info);
         });
-    });
 
-    $("#generateAllBSI").on( "click", function () {
-        $(".information").each(function (e) {
-            var info = $(this).data('collaboratorjson');
-
+        $("#generateAllBSI").on( "click", function () {
             $.ajax({
                 url: '/bsi/'+info.matricule,
                 method: 'POST',

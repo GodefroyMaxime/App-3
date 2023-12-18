@@ -153,7 +153,12 @@
     <body> 
         <main>
             {% for key, info_collaborator in info_collaborators %}
-                <table class="page">
+                <div class="page">
+                    <li id="name">Monsieur {{ info_collaborator.name }}</li>
+                    <img id="img_pieChartProtection" src="{{ absolute_url(info_collaborator.pieChartProtection) }}" alt="pieChartProtection">
+                </div>
+                              
+                {# <table class="page">
                     <tr>
                         <td class="demiPage">
                         </td>
@@ -319,7 +324,7 @@
                             </section>
                         </td>
                     </tr>
-                </table>
+                </table> #}
             {% endfor %}
         </main>
     </body>
