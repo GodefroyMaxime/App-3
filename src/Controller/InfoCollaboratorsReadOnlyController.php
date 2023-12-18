@@ -37,7 +37,7 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
     }  
 
     #[Route('/infoCollaboratorsRO/donwloadChartImage', name: 'app_info_collaborators_read_only_donwloadChartImage', methods: ['POST'])]
-    public function donwloadChartImage(InfoCollaboratorsRepository $infoCollaboratorsRepository, Request $request, ChartService $chart): Response
+    public function donwloadChartImage(InfoCollaboratorsRepository $infoCollaboratorsRepository, Request $request, PaginatorInterface $paginator, ChartService $chart): Response
     {
         $dataImage1 = $request->request->get('image1');
         $dataImage2 = $request->request->get('image2');
@@ -50,8 +50,13 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
         $chart->downloadDataImage($dataImage3, 'chartImage', 'PieChartProtection'.$matricule, 'png');
             
 
+        $pagination = $paginator->paginate(
+            $infoCollaboratorsRepository->paginationQuery(),
+            $request->query->get('page', 1),
+            100
+        );
         return $this->render('info_collaborators_read_only/index.html.twig', [
-            'info_collaborators' => $infoCollaboratorsRepository->findAll(),
+            'info_collaborators' => $pagination,
         ]);
     }
     
