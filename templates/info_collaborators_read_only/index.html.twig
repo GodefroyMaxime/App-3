@@ -72,6 +72,9 @@
         {% endfor %}
         </tbody>
     </table>
+
+    {{ knp_pagination_render(info_collaborators)}}
+    
     <button type="button" id="btnInfoSup" class="btn btn-primary" data-toggle="button" aria-pressed="false" autocomplete="off">Afficher plus d'information</button>
     <button type="button" id="generateAllChartImage" class="btn btn-primary" data-toggle="button" aria-pressed="false" autocomplete="off">Générer tout les graphiques</button>
     <button type="button" id="generateAllBSI" class="btn btn-primary" data-toggle="button" aria-pressed="false" autocomplete="off">Générer tout les BSI</button>

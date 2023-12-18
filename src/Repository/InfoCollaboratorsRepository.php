@@ -21,20 +21,16 @@ class InfoCollaboratorsRepository extends ServiceEntityRepository
         parent::__construct($registry, InfoCollaborators::class);
     }
 
-//    /**
-//     * @return InfoCollaborators[] Returns an array of InfoCollaborators objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('i')
-//            ->andWhere('i.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('i.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+   /**
+    * @return InfoCollaborators Returns a query of InfoCollaborators objects
+    */
+   public function paginationQuery()
+   {
+       return $this->createQueryBuilder('i')
+           ->orderBy('i.id', 'ASC')
+           ->getQuery()
+       ;
+   }
 
 //    public function findOneBySomeField($value): ?InfoCollaborators
 //    {

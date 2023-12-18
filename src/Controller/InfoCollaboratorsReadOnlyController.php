@@ -7,6 +7,7 @@ use App\Repository\InfoCollaboratorsRepository;
 use App\Service\BSIService;
 use App\Service\ChartService;
 use App\Service\PDFService;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,10 +16,15 @@ use Symfony\Component\Routing\Annotation\Route;
 class InfoCollaboratorsReadOnlyController extends AbstractController
 {
     #[Route('/infoCollaboratorsRO', name: 'app_info_collaborators_read_only_index', methods: ['GET'])]
-    public function index(InfoCollaboratorsRepository $infoCollaboratorsRepository): Response
+    public function index(InfoCollaboratorsRepository $infoCollaboratorsRepository, Request $request, PaginatorInterface $paginator): Response
     {
+        $pagination = $paginator->paginate(
+            $infoCollaboratorsRepository->paginationQuery(),
+            $request->query->get('page', 1),
+            100
+        );
         return $this->render('info_collaborators_read_only/index.html.twig', [
-            'info_collaborators' => $infoCollaboratorsRepository->findAll(),
+            'info_collaborators' => $pagination,
         ]);
     }    
 
