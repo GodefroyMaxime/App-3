@@ -172,84 +172,93 @@ function chartToImage (info) {
     });
 }
 
-function reloadGenerateChartImages (BSI, infos) {
+async function reloadGenerateChartImages (BSI, infos) {
     const promises = infos.map(info => generateChart(info));
     
-    return Promise.all(promises)
-        .then(() => {
-            return $.ajax(BSI);
-        });
+    await Promise.all(promises);
+    return await $.ajax(BSI);
 }
 
-function scriptOneByOne (btnId, url) {
-    return new Promise(function(resolveScriptOneByOne, rejectScriptOneByOne) {
-        $(".information").each(function () {
-            var info = $(this).data('collaboratorjson');
+function scriptOneByOne(btnId, url) {
+    var promises = [];
 
-            if (btnId == "generateAllChartImage") {
-                generateChart(info);
-            } else if (btnId == "generateAllChartImage") {
+    $(".information").each(function () {
+        var info = $(this).data('collaboratorjson');
+
+        if (btnId == "generateAllChartImage") {
+            var promise = new Promise(function(resolve1, reject1) {
+                generateChart(info).then(function() {
+                    resolve1();
+                }).catch(function(error) {
+                    reject1(error);
+                });
+            });
+            promises.push(promise);
+        } else if (btnId == "generateAllBSI") {
+            var promise = new Promise(function(resolve2, reject2) {
                 $.ajax({
-                    url: '/bsi/'+info.matricule,
+                    url: '/bsi/' + info.matricule,
                     method: 'POST',
                     data: {
                         infos: JSON.stringify(info),
                     },
                     xhrFields: {
-                        responseType: 'blob'            
+                        responseType: 'blob'
                     },
                     success: function (response, status, xhr) {
                         var filename = "test";
                         var disposition = xhr.getResponseHeader('Content-Disposition');
-    
+
                         if (disposition) {
                             var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
                             var matches = filenameRegex.exec(disposition);
                             if (matches !== null && matches[1]) filename = matches[1].replace(/['"]/g, '');
-                        }                 
+                        }
                         try {
                             var blob = new Blob([response], { type: 'application/octet-stream' });
                             if (typeof window.navigator.msSaveBlob !== 'undefined') {
-                                //   IE workaround for "HTML7007: One or more blob URLs were revoked by closing the blob for which they were created. These URLs will no longer resolve as the data backing the URL has been freed."                        window.navigator.msSaveBlob(blob, filename);
+                                window.navigator.msSaveBlob(blob, filename);
                             } else {
                                 var URL = window.URL || window.webkitURL;
                                 var downloadUrl = URL.createObjectURL(blob);
-    
-                                if (filename) { 
-                                    // use HTML5 a[download] attribute to specify filename                            
-                                    var a = document.createElement("a");
-    
-                                    // safari doesn't support this yet                            
-                                    if (typeof a.download === 'undefined') {
-                                        window.location = downloadUrl;
-                                    } else {
-                                        a.href = downloadUrl;
-                                        a.download = filename;
-                                        document.body.appendChild(a);
-                                        a.target = "_blank";
-                                        a.click();
-                                    }
-                                } else {
+
+                                var a = document.createElement("a");
+                                if (typeof a.download === 'undefined') {
                                     window.location = downloadUrl;
+                                } else {
+                                    a.href = downloadUrl;
+                                    a.download = filename;
+                                    document.body.appendChild(a);
+                                    a.target = "_blank";
+                                    a.click();
                                 }
-                            }   
-    
+                            }
+                            resolve2();
                         } catch (ex) {
                             console.log(ex);
-                        } 
+                            reject2(ex);
+                        }
                     },
-                    error: function () {
-                        reloadGenerateChartImages(this, [info]);
+                    error: function (error) {
+                        reject2(error);
                     }
                 });
-            }
-        });
+            });
+            promises.push(promise);
+        }
+    });
 
+    Promise.all(promises).then(function() {
         reloadPage(url).then(function() {
-            resolveScriptOneByOne();
+            console.log('Page reloaded');
+        }).catch(function(error) {
+            console.error('Erreur lors du rechargement de la page :', error);
         });
+    }).catch(function(error) {
+        console.error('Une ou plusieurs opérations asynchrones ont échoué :', error);
     });
 }
+
 
 function reloadPage (url) {
     return new Promise(function(resolveReload, rejectReload) {
