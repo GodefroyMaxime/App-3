@@ -15,6 +15,7 @@
     </style>
 
     <h1>InfoCollaborators index</h1>
+    
     <table class="table" data-collaboratorsjson="{{ info_collaborators|serialize(format = 'json') }}">
         <thead>
             <tr>
@@ -72,11 +73,11 @@
         {% endfor %}
         </tbody>
     </table>
-
     {{ knp_pagination_render(info_collaborators)}}
+    <input id="nbrPage" name="nbrPage" type="hidden" value="{{ info_collaborators.getPageCount }}" />
     
     <button type="button" id="btnInfoSup" class="btn btn-primary" data-toggle="button" aria-pressed="false" autocomplete="off">Afficher plus d'information</button>
-    <button type="button" id="generateAllChartImage" class="btn btn-primary" data-toggle="button" aria-pressed="false" autocomplete="off">Générer tout les graphiques</button>
-    <button type="button" id="generateAllBSI" class="btn btn-primary" data-toggle="button" aria-pressed="false" autocomplete="off">Générer tout les BSI</button>
-    <button type="button" id="generateOneBSI" class="btn btn-primary" data-toggle="button" aria-pressed="false" autocomplete="off">Générer tout les BSI sur un PDF</button>
+    <button type="button" id="generateAllChartImage" class="btnScript btn btn-primary" data-toggle="button" aria-pressed="false" autocomplete="off">Générer tout les graphiques</button>
+    <button type="button" id="generateAllBSI" class="btnScript btn btn-primary" data-toggle="button" aria-pressed="false" autocomplete="off">Générer tout les BSI</button>
+    <button type="button" id="generateOneBSI" class="btnScript btn btn-primary" data-toggle="button" aria-pressed="false" autocomplete="off">Générer tout les BSI sur un PDF</button>
 {% endblock %}
