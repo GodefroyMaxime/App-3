@@ -147,39 +147,34 @@ function generateChart (info) {
             data3,
             layout3,
         )
-    
-        chartToImage(info).then(function () {
-            resolveGenerate();
-        })
-        .catch(function (error) {
-            rejectGenerate(error);
-        });
+
+        resolveGenerate();
     });
 }
 
-async function chartToImage (info) {
-    return await new Promise(function(resolveImage, rejectImage) {
-        Plotly.toImage('piechart'+info.matricule, {format: 'png'}).then(function (dataURL1) {
-            Plotly.toImage('barchart'+info.matricule, {format: 'png'}).then(function (dataURL2) {
-                Plotly.toImage('pie2chart'+info.matricule, {format: 'png'}).then(function (dataURL3) {
-                    $.ajax({
-                        url: '/infoCollaboratorsRO/donwloadChartImage',
-                        method: 'POST',
-                        data: {
-                            image1: dataURL1,
-                            image2: dataURL2,
-                            image3: dataURL3,
-                            matricule: info.matricule, 
-                        },
-                        success: function () {
-                            resolveImage();
-                        },
-                        error: function () {
-                            chartToImage(info);
-                        }
-                    });
-                });
-            });
+function chartToImage(info) {
+    return new Promise(async function (resolveImage, rejectImage) {
+        await generateChart(info);
+
+        const dataURL1 = await Plotly.toImage('piechart' + info.matricule, { format: 'png' });
+        const dataURL2 = await Plotly.toImage('barchart' + info.matricule, { format: 'png' });
+        const dataURL3 = await Plotly.toImage('pie2chart' + info.matricule, { format: 'png' });
+
+        $.ajax({
+            url: '/infoCollaboratorsRO/donwloadChartImage',
+            method: 'POST',
+            data: {
+                image1: dataURL1,
+                image2: dataURL2,
+                image3: dataURL3,
+                matricule: info.matricule,
+            },
+            success: function () {
+                resolveImage();
+            },
+            error: function () {
+                chartToImage(info);
+            }
         });
     });
 }
@@ -191,8 +186,8 @@ async function processCurrentPage(btnId, currentPage) {
         var info = $(this).data('collaboratorjson');
 
         if (btnId == "generateAllChartImage") {
-            var promise = new Promise(function(resolve, reject) {
-                generateChart(info).then(resolve).catch(reject);
+            var promise = new Promise(async function(resolve, reject) {
+                await chartToImage(info).then(resolve).catch(reject);
             });
         } else if (btnId == "generateAllBSI") {
             var promise = new Promise(function(resolve2, reject2) {
@@ -251,16 +246,22 @@ async function processCurrentPage(btnId, currentPage) {
     localStorage.setItem('currentPage', currentPage);
     localStorage.setItem('btnId', btnId); 
 
-    await Promise.all(promises);
+    await Promise.all(promises); 
 }
 
 function processPages(btnId, currentPage) {
+    let url = new URL(location.href);
+    url.searchParams.set('page', currentPage);
+    window.location.href = url.href;
 
     return new Promise(function(resolveProcessPage, rejectProcessPage) {
-        let url = new URL(location.href);
-        url.searchParams.set('page', currentPage);
-        window.location.href = url.href;
-        processCurrentPage(btnId, currentPage);
+        processCurrentPage(btnId, currentPage)
+            .then(() => {
+                resolveProcessPage();
+            })
+            .catch((error) => {
+                rejectProcessPage(error);
+            });
     });
 }
 
@@ -269,7 +270,7 @@ $(function() {
     $(".information").each(function () {
         var info = $(this).data('collaboratorjson');
         $("#generateChartImage"+info.matricule).on( "click", function () {
-            generateChart(info);
+            chartToImage(info);
         });
            
         $("#generateBSI"+info.matricule).on( "click", function () {
