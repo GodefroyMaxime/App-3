@@ -4,15 +4,9 @@ function calculatePercentage (x, y) {
     return (x*100)/(x*1+y*1);
 }
 
-async function reloadGenerateChartImages (BSI, infos) {
-    const promises = infos.map(info => generateChart(info));
-    
-    await Promise.all(promises);
-    return await $.ajax(BSI);
-}
-
 function generateChart (info) {
-    return new Promise(function (resolveGenerate, rejectGenerate) {
+    return new Promise(function(resolveGenerate, rejectGenerate) {
+
         //Graph 1
         var totalBrut = (info.bonus)*1+(info.grossAnnualSalary)*1;
         var data1 = [{
@@ -147,36 +141,45 @@ function generateChart (info) {
             data3,
             layout3,
         )
-
-        resolveGenerate();
+        
+        chartToImage(info).then(function() {
+            resolveGenerate();
+        });
     });
 }
 
-function chartToImage(info) {
-    return new Promise(async function (resolveImage, rejectImage) {
-        await generateChart(info);
-
-        const dataURL1 = await Plotly.toImage('piechart' + info.matricule, { format: 'png' });
-        const dataURL2 = await Plotly.toImage('barchart' + info.matricule, { format: 'png' });
-        const dataURL3 = await Plotly.toImage('pie2chart' + info.matricule, { format: 'png' });
-
-        $.ajax({
-            url: '/infoCollaboratorsRO/donwloadChartImage',
-            method: 'POST',
-            data: {
-                image1: dataURL1,
-                image2: dataURL2,
-                image3: dataURL3,
-                matricule: info.matricule,
-            },
-            success: function () {
-                resolveImage();
-            },
-            error: function () {
-                chartToImage(info);
-            }
+function chartToImage (info) {
+    return new Promise(function(resolveImage, rejectImage) {
+        Plotly.toImage('piechart'+info.matricule, {format: 'png'}).then(function (dataURL1) {
+            Plotly.toImage('barchart'+info.matricule, {format: 'png'}).then(function (dataURL2) {
+                Plotly.toImage('pie2chart'+info.matricule, {format: 'png'}).then(function (dataURL3) {
+                    $.ajax({
+                        url: '/infoCollaboratorsRO/donwloadChartImage',
+                        method: 'POST',
+                        data: {
+                            image1: dataURL1,
+                            image2: dataURL2,
+                            image3: dataURL3,
+                            matricule: info.matricule, 
+                        },
+                        success: function () {
+                            resolveImage();
+                        },
+                        error: function () {
+                            chartToImage(info)
+                        }
+                    });
+                });
+            });
         });
     });
+}
+
+async function reloadGenerateChartImages (BSI, infos) {
+    const promises = infos.map(info => generateChart(info));
+    
+    await Promise.all(promises);
+    return await $.ajax(BSI);
 }
 
 async function processCurrentPage(btnId, currentPage) {
@@ -186,9 +189,16 @@ async function processCurrentPage(btnId, currentPage) {
         var info = $(this).data('collaboratorjson');
 
         if (btnId == "generateAllChartImage") {
-            var promise = new Promise(async function(resolve, reject) {
-                await chartToImage(info).then(resolve).catch(reject);
+            var promise = new Promise(function(resolve1, reject1) {
+                generateChart(info).then(function() {
+                    try {
+                        resolve1();
+                    } catch (error) {
+                        processCurrentPage(btnId, currentPage);
+                    }
+                })
             });
+            promises.push(promise);
         } else if (btnId == "generateAllBSI") {
             var promise = new Promise(function(resolve2, reject2) {
                 $.ajax({
@@ -238,30 +248,27 @@ async function processCurrentPage(btnId, currentPage) {
                     }
                 });
             });
+            promises.push(promise);
         }
-        promises.push(promise);
     });
 
-    currentPage++;
-    localStorage.setItem('currentPage', currentPage);
-    localStorage.setItem('btnId', btnId); 
-
-    await Promise.all(promises); 
+    return Promise.all(promises).then(function() {
+        currentPage++;
+        localStorage.setItem('currentPage', currentPage);
+        localStorage.setItem('btnId', btnId);
+    })
 }
 
-function processPages(btnId, currentPage) {
-    let url = new URL(location.href);
-    url.searchParams.set('page', currentPage);
-    window.location.href = url.href;
-
-    return new Promise(function(resolveProcessPage, rejectProcessPage) {
-        processCurrentPage(btnId, currentPage)
-            .then(() => {
-                resolveProcessPage();
-            })
-            .catch((error) => {
-                rejectProcessPage(error);
-            });
+async function processPages(btnId, currentPage, totalPages) {
+    return processCurrentPage(btnId, currentPage).then(function() {
+        if (currentPage < totalPages) {
+            let url = new URL(location.href);
+            url.searchParams.set('page', currentPage);
+            window.location.href = url.href;
+        } else {
+            console.log('Toutes les pages ont été traitées');
+            localStorage.removeItem('currentPage');
+        }
     });
 }
 
@@ -270,7 +277,7 @@ $(function() {
     $(".information").each(function () {
         var info = $(this).data('collaboratorjson');
         $("#generateChartImage"+info.matricule).on( "click", function () {
-            chartToImage(info);
+            generateChart(info);
         });
            
         $("#generateBSI"+info.matricule).on( "click", function () {
@@ -330,22 +337,17 @@ $(function() {
         });
     });
     
-    let totalPages = $("#nbrPage").val()*1;
+    let totalPages = $("#nbrPage").val()*1 + 1;
     let btnId = localStorage.getItem('btnId');
     let currentPage = localStorage.getItem('currentPage');
 
-    if (currentPage && btnId && currentPage <= totalPages) {
-        processPages(btnId, currentPage)
-    }
-    else {
-        localStorage.removeItem('currentPage');
-        localStorage.removeItem('btnId');
+    if (currentPage && btnId && currentPage < totalPages) {
+        processPages(btnId, currentPage, totalPages);
     }
 
     $(".btnScript").on("click", function() {
-        
-        let currentPage = 1;
-        processPages($(this).attr('id'), currentPage);
+        let currentPage = 2;
+        processPages($(this).attr('id'), currentPage, totalPages);
     });
 
     $("#generateOneBSI").on( "click", function () {
