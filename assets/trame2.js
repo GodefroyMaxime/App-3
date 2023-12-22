@@ -4,9 +4,15 @@ function calculatePercentage (x, y) {
     return (x*100)/(x*1+y*1);
 }
 
+async function reloadGenerateChartImages (BSI, infos) {
+    const promises = infos.map(info => generateChart(info));
+    
+    await Promise.all(promises);
+    return await $.ajax(BSI);
+}
+
 function generateChart (info) {
-    var promises = [];
-    var promise = new Promise(function(resolveGenerate, rejectGenerate) {
+    return new Promise(function (resolveGenerate, rejectGenerate) {
         //Graph 1
         var totalBrut = (info.bonus)*1+(info.grossAnnualSalary)*1;
         var data1 = [{
@@ -141,15 +147,18 @@ function generateChart (info) {
             data3,
             layout3,
         )
+    
+        chartToImage(info).then(function () {
+            resolveGenerate();
+        })
+        .catch(function (error) {
+            rejectGenerate(error);
+        });
     });
-
-    promises.push(promise);
-    chartToImage(promises, info);
-    return Promise.all(promises);
 }
 
-function chartToImage (promises, info) {
-    var promise = new Promise(function(resolveImage, rejectImage) {
+async function chartToImage (info) {
+    return await new Promise(function(resolveImage, rejectImage) {
         Plotly.toImage('piechart'+info.matricule, {format: 'png'}).then(function (dataURL1) {
             Plotly.toImage('barchart'+info.matricule, {format: 'png'}).then(function (dataURL2) {
                 Plotly.toImage('pie2chart'+info.matricule, {format: 'png'}).then(function (dataURL3) {
@@ -166,24 +175,13 @@ function chartToImage (promises, info) {
                             resolveImage();
                         },
                         error: function () {
-                            reloadGenerateChartImages(this, [info]);
+                            chartToImage(info);
                         }
                     });
                 });
             });
         });
     });
-    
-    promises.push(promise);
-
-    return promises;
-}
-
-async function reloadGenerateChartImages (BSI, infos) {
-    const promises = infos.map(info => generateChart(info));
-    
-    await Promise.all(promises);
-    return await $.ajax(BSI);
 }
 
 async function processCurrentPage(btnId, currentPage) {
@@ -193,8 +191,8 @@ async function processCurrentPage(btnId, currentPage) {
         var info = $(this).data('collaboratorjson');
 
         if (btnId == "generateAllChartImage") {
-            var promise = new Promise(function(resolve1, reject1) {
-                generateChart(info);
+            var promise = new Promise(function(resolve, reject) {
+                generateChart(info).then(resolve).catch(reject);
             });
         } else if (btnId == "generateAllBSI") {
             var promise = new Promise(function(resolve2, reject2) {
@@ -254,16 +252,15 @@ async function processCurrentPage(btnId, currentPage) {
     localStorage.setItem('btnId', btnId); 
 
     await Promise.all(promises);
-    console.log('est');
-    processPages(currentPage)
 }
 
-function processPages(currentPage) {
+function processPages(btnId, currentPage) {
 
     return new Promise(function(resolveProcessPage, rejectProcessPage) {
         let url = new URL(location.href);
         url.searchParams.set('page', currentPage);
         window.location.href = url.href;
+        processCurrentPage(btnId, currentPage);
     });
 }
 
@@ -336,8 +333,8 @@ $(function() {
     let btnId = localStorage.getItem('btnId');
     let currentPage = localStorage.getItem('currentPage');
 
-    if (currentPage && btnId && currentPage < totalPages) {
-        processCurrentPage(btnId, currentPage);
+    if (currentPage && btnId && currentPage <= totalPages) {
+        processPages(btnId, currentPage)
     }
     else {
         localStorage.removeItem('currentPage');
@@ -347,7 +344,7 @@ $(function() {
     $(".btnScript").on("click", function() {
         
         let currentPage = 1;
-        processCurrentPage($(this).attr('id'), currentPage);
+        processPages($(this).attr('id'), currentPage);
     });
 
     $("#generateOneBSI").on( "click", function () {
