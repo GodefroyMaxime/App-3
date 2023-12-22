@@ -5,8 +5,8 @@ function calculatePercentage (x, y) {
 }
 
 function generateChart (info) {
-    return new Promise(function(resolveGenerate, rejectGenerate) {
-
+    var promises = [];
+    var promise = new Promise(function(resolveGenerate, rejectGenerate) {
         //Graph 1
         var totalBrut = (info.bonus)*1+(info.grossAnnualSalary)*1;
         var data1 = [{
@@ -48,7 +48,7 @@ function generateChart (info) {
             ],
             y: ['Retraite', 'Prévoyance', 'Mutuelle'],
             
-            text: [info.employerSharePension+' €', info.employerShareHealthInsurance+' €', info.employerShareMutualInsurance+' €'],
+            text: [calculatePercentage(info.employerSharePension,info.employeeSharePension).toFixed(2)+' %', calculatePercentage(info.employerShareHealthInsurance,info.employeeShareHealthInsurance).toFixed(2)+' %', calculatePercentage(info.employerShareMutualInsurance,info.employeeShareMutualInsurance).toFixed(2)+' %'],
             textposition: 'inside', 
             insidetextanchor: 'middle',
             name: 'Employeur',
@@ -67,7 +67,7 @@ function generateChart (info) {
             ],
             y: ['Retraite', 'Prévoyance', 'Mutuelle'],
             
-            text: [info.employeeSharePension+' €', info.employeeShareHealthInsurance+' €', info.employeeShareMutualInsurance+' €'],
+            text: [calculatePercentage(info.employeeSharePension,info.employerSharePension).toFixed(2)+' %', calculatePercentage(info.employeeShareHealthInsurance,info.employerShareHealthInsurance).toFixed(2)+' %', calculatePercentage(info.employeeShareMutualInsurance,info.employerShareMutualInsurance).toFixed(2)+' %'],
             textposition: 'inside', 
             insidetextanchor: 'middle',
             name: 'Salarié',
@@ -141,15 +141,15 @@ function generateChart (info) {
             data3,
             layout3,
         )
-        
-        chartToImage(info).then(function() {
-            resolveGenerate();
-        });
     });
+
+    promises.push(promise);
+    chartToImage(promises, info);
+    return Promise.all(promises);
 }
 
-function chartToImage (info) {
-    return new Promise(function(resolveImage, rejectImage) {
+function chartToImage (promises, info) {
+    var promise = new Promise(function(resolveImage, rejectImage) {
         Plotly.toImage('piechart'+info.matricule, {format: 'png'}).then(function (dataURL1) {
             Plotly.toImage('barchart'+info.matricule, {format: 'png'}).then(function (dataURL2) {
                 Plotly.toImage('pie2chart'+info.matricule, {format: 'png'}).then(function (dataURL3) {
@@ -165,11 +165,18 @@ function chartToImage (info) {
                         success: function () {
                             resolveImage();
                         },
+                        error: function () {
+                            reloadGenerateChartImages(this, [info]);
+                        }
                     });
                 });
             });
         });
     });
+    
+    promises.push(promise);
+
+    return promises;
 }
 
 async function reloadGenerateChartImages (BSI, infos) {
@@ -179,7 +186,7 @@ async function reloadGenerateChartImages (BSI, infos) {
     return await $.ajax(BSI);
 }
 
-function scriptOneByOne(btnId, url) {
+async function processCurrentPage(btnId, currentPage) {
     var promises = [];
 
     $(".information").each(function () {
@@ -187,18 +194,13 @@ function scriptOneByOne(btnId, url) {
 
         if (btnId == "generateAllChartImage") {
             var promise = new Promise(function(resolve1, reject1) {
-                generateChart(info).then(function() {
-                    resolve1();
-                }).catch(function(error) {
-                    reject1(error);
-                });
+                generateChart(info);
             });
-            promises.push(promise);
         } else if (btnId == "generateAllBSI") {
             var promise = new Promise(function(resolve2, reject2) {
                 $.ajax({
                     url: '/bsi/' + info.matricule,
-                    method: 'POST',
+                    method: 'POST', 
                     data: {
                         infos: JSON.stringify(info),
                     },
@@ -236,33 +238,32 @@ function scriptOneByOne(btnId, url) {
                             resolve2();
                         } catch (ex) {
                             console.log(ex);
-                            reject2(ex);
-                        }
+                        } 
                     },
-                    error: function (error) {
-                        reject2(error);
+                    error: function () {
+                        reloadGenerateChartImages(this, [info]);
                     }
                 });
             });
-            promises.push(promise);
         }
+        promises.push(promise);
     });
 
-    Promise.all(promises).then(function() {
-        reloadPage(url).then(function() {
-            console.log('Page reloaded');
-        }).catch(function(error) {
-            console.error('Erreur lors du rechargement de la page :', error);
-        });
-    }).catch(function(error) {
-        console.error('Une ou plusieurs opérations asynchrones ont échoué :', error);
-    });
+    currentPage++;
+    localStorage.setItem('currentPage', currentPage);
+    localStorage.setItem('btnId', btnId); 
+
+    await Promise.all(promises);
+    console.log('est');
+    processPages(currentPage)
 }
 
+function processPages(currentPage) {
 
-function reloadPage (url) {
-    return new Promise(function(resolveReload, rejectReload) {
-        window.location.href = url;
+    return new Promise(function(resolveProcessPage, rejectProcessPage) {
+        let url = new URL(location.href);
+        url.searchParams.set('page', currentPage);
+        window.location.href = url.href;
     });
 }
 
@@ -330,14 +331,23 @@ $(function() {
             });
         });
     });
+    
+    let totalPages = $("#nbrPage").val()*1;
+    let btnId = localStorage.getItem('btnId');
+    let currentPage = localStorage.getItem('currentPage');
 
-    $(".btnScript").on( "click", function () {
-        let url = new URL(location.href);
-        var btnId = this.id;
-        for (let i = 1; i <= $("#nbrPage").val(); i++) {
-            url.searchParams.set('page', i);
-            scriptOneByOne(btnId, url);
-        }
+    if (currentPage && btnId && currentPage < totalPages) {
+        processCurrentPage(btnId, currentPage);
+    }
+    else {
+        localStorage.removeItem('currentPage');
+        localStorage.removeItem('btnId');
+    }
+
+    $(".btnScript").on("click", function() {
+        
+        let currentPage = 1;
+        processCurrentPage($(this).attr('id'), currentPage);
     });
 
     $("#generateOneBSI").on( "click", function () {
