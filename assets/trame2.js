@@ -166,7 +166,7 @@ function chartToImage (info) {
                             resolveImage();
                         },
                         error: function () {
-                            chartToImage(info)
+                            location.reload();
                         }
                     });
                 });
@@ -182,7 +182,7 @@ async function reloadGenerateChartImages (BSI, infos) {
     return await $.ajax(BSI);
 }
 
-async function processCurrentPage(btnId, currentPage) {
+function processCurrentPage(btnId, nextPage) {
     var promises = [];
 
     $(".information").each(function () {
@@ -194,7 +194,7 @@ async function processCurrentPage(btnId, currentPage) {
                     try {
                         resolve1();
                     } catch (error) {
-                        processCurrentPage(btnId, currentPage);
+                        processPages(btnId, nextPage);
                     }
                 })
             });
@@ -253,37 +253,42 @@ async function processCurrentPage(btnId, currentPage) {
     });
 
     return Promise.all(promises).then(function() {
-        currentPage++;
-        localStorage.setItem('currentPage', currentPage);
+        nextPage++;
+        localStorage.setItem('nextPage', nextPage);
         localStorage.setItem('btnId', btnId);
     })
 }
 
-async function processPages(btnId, currentPage, totalPages) {
-    // return processCurrentPage(btnId, currentPage).then(function() {
-    //     if (currentPage < totalPages) {
-    //         let url = new URL(location.href);
-    //         url.searchParams.set('page', currentPage);
-    //         window.location.href = url.href;
-    //     } else {
-    //         console.log('Toutes les pages ont été traitées');
-    //         localStorage.removeItem('currentPage');
-    //     }
-    // });
-    
+function processPages(btnId, nextPage) {
+    let totalPages = $("#nbrPage").val()*1;
 
-    return new Promise(function(resolveProcessPage, rejectProcessPage) {
-        processCurrentPage(btnId, currentPage)
-        .then(() => {
-            let url = new URL(location.href);
-            url.searchParams.set('page', currentPage);
-            window.location.href = url.href;
-            resolveProcessPage();
-        })
-        .catch((error) => {
-            rejectProcessPage(error);
+    if (nextPage <= totalPages) {
+        return new Promise(function(resolveProcessPage, rejectProcessPage) {
+            processCurrentPage(btnId, nextPage)
+            .then(() => {
+                let url = new URL(location.href);
+                url.searchParams.set('page', nextPage);
+                window.location.href = url.href;
+                resolveProcessPage();
+            })
+            .catch((error) => {
+                rejectProcessPage(error);
+            });
         });
-    });
+    
+    } else {
+        return new Promise(function(resolveProcessPage, rejectProcessPage) {
+            processCurrentPage(btnId, nextPage)
+            .then(() => {
+                localStorage.removeItem('nextPage');
+                localStorage.removeItem('btnId');
+                resolveProcessPage();
+            })
+            .catch((error) => {
+                rejectProcessPage(error);
+            });
+        });
+    }
 }
 
 $(function() {
@@ -351,91 +356,74 @@ $(function() {
     });
 
 
-    let totalPages = $("#nbrPage").val()*1 + 1;
     let btnId = localStorage.getItem('btnId');
-    let currentPage = localStorage.getItem('currentPage');
-    if (currentPage && btnId && currentPage <= totalPages) {
-        processPages(btnId, currentPage)
-    }
-    else {
-        localStorage.removeItem('currentPage');
-        localStorage.removeItem('btnId');
+    let nextPage = localStorage.getItem('nextPage');
+    if (nextPage && btnId) {
+        processPages(btnId, nextPage)
     }
     
     $(".btnScript").on("click", function() {
-        let currentPage = 2;
-        processPages($(this).attr('id'), currentPage);
+        let nextPage = 2;
+        processPages($(this).attr('id'), nextPage);
     });
-    
-    // let totalPages = $("#nbrPage").val()*1 + 1;
-    // let btnId = localStorage.getItem('btnId');
-    // let currentPage = localStorage.getItem('currentPage');
 
-    // if (currentPage && btnId && currentPage < totalPages) {
-    //     processPages(btnId, currentPage, totalPages);
-    // }
+    // Bloqué vu que pas besoin mais à garder
+    // $("#generateOneBSI").on( "click", function () {
+    //     var infos = $(".table").data('collaboratorsjson');
+    //     $.ajax({
+    //         url: '/AllBSI',
+    //         method: 'POST',
+    //         data: {
+    //             infos: JSON.stringify(infos),
+    //         },
+    //         xhrFields: {
+    //             responseType: 'blob'            
+    //         },
+    //         success: function (response, status, xhr) {
+    //             var filename = "test";
+    //             var disposition = xhr.getResponseHeader('Content-Disposition');
 
-    // $(".btnScript").on("click", function() {
-    //     let currentPage = 2;
-    //     processPages($(this).attr('id'), currentPage, totalPages);
+    //             if (disposition) {
+    //                 var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+    //                 var matches = filenameRegex.exec(disposition);
+    //                 if (matches !== null && matches[1]) filename = matches[1].replace(/['"]/g, '');
+    //             }                 
+    //             try {
+    //                 var blob = new Blob([response], { type: 'application/octet-stream' });
+    //                 if (typeof window.navigator.msSaveBlob !== 'undefined') {
+    //                     //   IE workaround for "HTML7007: One or more blob URLs were revoked by closing the blob for which they were created. These URLs will no longer resolve as the data backing the URL has been freed."                        window.navigator.msSaveBlob(blob, filename);
+    //                 } else {
+    //                     var URL = window.URL || window.webkitURL;
+    //                     var downloadUrl = URL.createObjectURL(blob);
+
+    //                     if (filename) { 
+    //                         // use HTML5 a[download] attribute to specify filename                            
+    //                         var a = document.createElement("a");
+
+    //                         // safari doesn't support this yet                            
+    //                         if (typeof a.download === 'undefined') {
+    //                             window.location = downloadUrl;
+    //                         } else {
+    //                             a.href = downloadUrl;
+    //                             a.download = filename;
+    //                             document.body.appendChild(a);
+    //                             a.target = "_blank";
+    //                             a.click();
+    //                         }
+    //                     } else {
+    //                         window.location = downloadUrl;
+    //                     }
+    //                 }   
+
+    //             } catch (ex) {
+    //                 console.log(ex);
+    //             } 
+    //         },
+    //         error: function () {
+    //             reloadGenerateChartImages(this, infos);
+    //         }
+    //     });
     // });
-
-    $("#generateOneBSI").on( "click", function () {
-        var infos = $(".table").data('collaboratorsjson');
-        $.ajax({
-            url: '/AllBSI',
-            method: 'POST',
-            data: {
-                infos: JSON.stringify(infos),
-            },
-            xhrFields: {
-                responseType: 'blob'            
-            },
-            success: function (response, status, xhr) {
-                var filename = "test";
-                var disposition = xhr.getResponseHeader('Content-Disposition');
-
-                if (disposition) {
-                    var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-                    var matches = filenameRegex.exec(disposition);
-                    if (matches !== null && matches[1]) filename = matches[1].replace(/['"]/g, '');
-                }                 
-                try {
-                    var blob = new Blob([response], { type: 'application/octet-stream' });
-                    if (typeof window.navigator.msSaveBlob !== 'undefined') {
-                        //   IE workaround for "HTML7007: One or more blob URLs were revoked by closing the blob for which they were created. These URLs will no longer resolve as the data backing the URL has been freed."                        window.navigator.msSaveBlob(blob, filename);
-                    } else {
-                        var URL = window.URL || window.webkitURL;
-                        var downloadUrl = URL.createObjectURL(blob);
-
-                        if (filename) { 
-                            // use HTML5 a[download] attribute to specify filename                            
-                            var a = document.createElement("a");
-
-                            // safari doesn't support this yet                            
-                            if (typeof a.download === 'undefined') {
-                                window.location = downloadUrl;
-                            } else {
-                                a.href = downloadUrl;
-                                a.download = filename;
-                                document.body.appendChild(a);
-                                a.target = "_blank";
-                                a.click();
-                            }
-                        } else {
-                            window.location = downloadUrl;
-                        }
-                    }   
-
-                } catch (ex) {
-                    console.log(ex);
-                } 
-            },
-            error: function () {
-                reloadGenerateChartImages(this, infos);
-            }
-        });
-    });
 
     $("#btnInfoSup").on( "click", function () {
         var button = $(this);
