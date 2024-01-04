@@ -260,20 +260,33 @@ async function processCurrentPage(btnId, currentPage) {
 }
 
 async function processPages(btnId, currentPage, totalPages) {
-    return processCurrentPage(btnId, currentPage).then(function() {
-        if (currentPage < totalPages) {
+    // return processCurrentPage(btnId, currentPage).then(function() {
+    //     if (currentPage < totalPages) {
+    //         let url = new URL(location.href);
+    //         url.searchParams.set('page', currentPage);
+    //         window.location.href = url.href;
+    //     } else {
+    //         console.log('Toutes les pages ont été traitées');
+    //         localStorage.removeItem('currentPage');
+    //     }
+    // });
+    
+
+    return new Promise(function(resolveProcessPage, rejectProcessPage) {
+        processCurrentPage(btnId, currentPage)
+        .then(() => {
             let url = new URL(location.href);
             url.searchParams.set('page', currentPage);
             window.location.href = url.href;
-        } else {
-            console.log('Toutes les pages ont été traitées');
-            localStorage.removeItem('currentPage');
-        }
+            resolveProcessPage();
+        })
+        .catch((error) => {
+            rejectProcessPage(error);
+        });
     });
 }
 
 $(function() {
-
     $(".information").each(function () {
         var info = $(this).data('collaboratorjson');
         $("#generateChartImage"+info.matricule).on( "click", function () {
@@ -336,19 +349,36 @@ $(function() {
             });
         });
     });
-    
+
+
     let totalPages = $("#nbrPage").val()*1 + 1;
     let btnId = localStorage.getItem('btnId');
     let currentPage = localStorage.getItem('currentPage');
-
-    if (currentPage && btnId && currentPage < totalPages) {
-        processPages(btnId, currentPage, totalPages);
+    if (currentPage && btnId && currentPage <= totalPages) {
+        processPages(btnId, currentPage)
     }
-
+    else {
+        localStorage.removeItem('currentPage');
+        localStorage.removeItem('btnId');
+    }
+    
     $(".btnScript").on("click", function() {
         let currentPage = 2;
-        processPages($(this).attr('id'), currentPage, totalPages);
+        processPages($(this).attr('id'), currentPage);
     });
+    
+    // let totalPages = $("#nbrPage").val()*1 + 1;
+    // let btnId = localStorage.getItem('btnId');
+    // let currentPage = localStorage.getItem('currentPage');
+
+    // if (currentPage && btnId && currentPage < totalPages) {
+    //     processPages(btnId, currentPage, totalPages);
+    // }
+
+    // $(".btnScript").on("click", function() {
+    //     let currentPage = 2;
+    //     processPages($(this).attr('id'), currentPage, totalPages);
+    // });
 
     $("#generateOneBSI").on( "click", function () {
         var infos = $(".table").data('collaboratorsjson');
