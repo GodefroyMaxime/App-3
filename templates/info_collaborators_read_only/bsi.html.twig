@@ -153,17 +153,19 @@
     <body> 
         <main>
             {% for key, info_collaborator in info_collaborators %}
-                <div class="page">
+                {# <div class="page">
                     <li id="name">Monsieur {{ info_collaborator.name }}</li>
-                    <img id="img_pieChartProtection" src="{{ absolute_url(info_collaborator.pieChartProtection) }}" alt="pieChartProtection">
-                </div>
+                    <img id="img_pieChartProtection" src="{{ imgPieChartProtection }}" alt="pieChartProtection">
+                    <img id="img_Lyreco_Marly" class="margin-bottom" src="{{ imgMarly }}" alt="Lyreco_Marly">
+                    
+                </div> #}
                               
-                {# <table class="page">
+                <table class="page">
                     <tr>
                         <td class="demiPage">
                         </td>
                         <td class="demiPage">
-                            <img id="img_Lyreco_Marly" class="margin-bottom" src="{{ absolute_url(asset('images/Lyreco_Marly.jpg')) }}" alt="Lyreco_Marly"></img>
+                            <img id="img_Lyreco_Marly" class="margin-bottom" src="{{ imgMarly }}" alt="Lyreco_Marly">
                             <section id="header">
                                 <table id="tableHeader">
                                     <tr class="trHeader">
@@ -185,7 +187,7 @@
                                     ce document vous donne une vision globale, et personnalisée des différentes composantes de votre rémunération ainsi que des avantages 
                                     sociaux dont vous avez bénéficié.
                                 </p>
-                                <img id="img_team" src="{{ absolute_url(asset('images/Team.jpg')) }}" alt="Team"></img>
+                                <img id="img_team" src="{{ imgTeams }}" alt="Team">
                                 <p class="letterContent">
                                     Nous espérons que vous trouverez dans ce Bilan Social Individuel, une information complète et adaptée à la bonne compréhension de notre politique sociale.
                                 </p>
@@ -287,7 +289,7 @@
                                         <td class="tdPay">- {{ info_collaborator.bonus }} €</td>
                                     </tr>                                
                                 </table>
-                                <img id="img_pieChartSalaire" src="{{ absolute_url(info_collaborator.pieChartSalaire) }}" alt="pieChartSalaire">
+                                <img id="img_pieChartSalaire" src="{{ imgPieChartSalaire }}" alt="pieChartSalaire">
                                 <p>Total brut annuel 2023 : {{ info_collaborator.grossAnnualSalary + info_collaborator.bonus }} €</p>
                             </section>
                         </td>
@@ -297,7 +299,7 @@
                                 <p>
                                     Les cotisations sociales sont l’ensemble des charges supportées par l’employeur et par le salarié et servant à financer les divers dispositifs et organismes publics chargés de la protection sociale : Sécurité sociale (assurance maladie, retraite), accidents du travail, allocations familiales, chômage, retraite complémentaire, mutuelle, prévoyance.
                                 </p>
-                                <img id="img_pieChartProtection" src="{{ absolute_url(info_collaborator.pieChartProtection) }}" alt="pieChartProtection">
+                                <img id="img_pieChartProtection" src="{{ imgPieChartProtection }}" alt="pieChartProtection">
                                 <p>Répartition des cotisations sociales</p>
                                 <table id="tableProtection">
                                     <thead id="thProtection">Salaire brut annuel</thead>
@@ -324,7 +326,7 @@
                             </section>
                         </td>
                     </tr>
-                </table> #}
+                </table>
             {% endfor %}
         </main>
     </body>

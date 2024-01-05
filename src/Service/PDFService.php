@@ -10,6 +10,8 @@ class PDFService
     public function generatePDF($orientation, $html, $title = "default", $size = "A4") {
         $options = new Options();
         $options->setIsRemoteEnabled(true);
+        //$options->setDebugLayout(true); Debug CSS
+
         $pdf = new Dompdf($options);
 
         $pdf->setPaper($size, $orientation);
@@ -17,7 +19,7 @@ class PDFService
         $pdf->loadHtml($html);
         $pdf->render();
         $pdf->stream($title.".pdf", [
-            "Attachement"=>true,
+            "Attachement"=> true,
         ]);
     }
 }

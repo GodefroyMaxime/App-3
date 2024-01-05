@@ -64,8 +64,8 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
     public function bsi(PDFService $pdf, BSIService $bsi, Request $request): Response
     {    
         
-        set_time_limit(0);
-        ini_set('memory_limit', '10000M');
+        // set_time_limit(0);
+        // ini_set('memory_limit', '10000M');
         
         $info = [json_decode($request->request->get('infos'), true)];  
         $info_collaborators = $bsi->addPathChartImageTable($info);
@@ -74,10 +74,11 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
 
         foreach ($info_collaborators as $key => $value) {
             $matricule = $value['matricule'];
-            
+            $pieChartSalaire = $value['pieChartSalaire'];
+            $barChartProtection = $value['barChartProtection'];
             $pieChartProtection = $value['pieChartProtection'];
 
-            if(!file_exists('.'.$pieChartProtection)) {
+            if(!file_exists('.'.$pieChartSalaire) || !file_exists('.'.$barChartProtection) || !file_exists('.'.$pieChartProtection)) {
                 $chart += [$value['matricule'] => false];
             } else {
                 $chart += [$value['matricule'] => true];
@@ -86,10 +87,15 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
 
         $html = $this->renderView('info_collaborators_read_only/bsi.html.twig', [
             'info_collaborators' => $info_collaborators,
+            'imgMarly' => $this->imageToBase64($this->getParameter('kernel.project_dir') . '/public/images/Lyreco_Marly.jpg'),
+            'imgTeams' => $this->imageToBase64($this->getParameter('kernel.project_dir') . '/public/images/Team.jpg'),
+            'imgPieChartSalaire' => $this->imageToBase64($this->getParameter('kernel.project_dir') . '/public'.$pieChartSalaire),
+            'imgBarChartProtection' => $this->imageToBase64($this->getParameter('kernel.project_dir') . '/public'.$barChartProtection),
+            'imgPieChartProtection' => $this->imageToBase64($this->getParameter('kernel.project_dir') . '/public'.$pieChartProtection),
         ]);  
 
         if (in_array(false, $chart)) {
-             return new Response('Image manquante',Response::HTTP_INTERNAL_SERVER_ERROR);
+             return new Response('Image manquante', Response::HTTP_INTERNAL_SERVER_ERROR);
         } else {
             return new Response(
                 $pdf->generatePDF("landscape", $html, 'BSI_'.$matricule, "A4"),
@@ -99,39 +105,47 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
         }             
     }   
  
-    
-    #[Route('/AllBSI', name: 'app_info_collaborators_read_only_all_bsi', methods: ['POST'])]
-    public function allbsi(PDFService $pdf, BSIService $bsi, Request $request): Response
-    {        
-        set_time_limit(0);
-        ini_set('memory_limit', '10000M');
+    // Bloqué vu que pas besoin mais à garder
+    // #[Route('/AllBSI', name: 'app_info_collaborators_read_only_all_bsi', methods: ['POST'])]
+    // public function allbsi(PDFService $pdf, BSIService $bsi, Request $request): Response
+    // {        
+    //     set_time_limit(0);
+    //     ini_set('memory_limit', '10000M');
         
-        $infos = json_decode($request->request->get('infos'), true); 
-        $info_collaborators = $bsi->addPathChartImageTable($infos);
-        $chart = [];
-        foreach ($info_collaborators as $key => $value) {
+    //     $infos = json_decode($request->request->get('infos'), true); 
+    //     $info_collaborators = $bsi->addPathChartImageTable($infos);
+    //     $chart = [];
+    //     foreach ($info_collaborators as $key => $value) {
             
-            $pieChartProtection = $value['pieChartProtection'];
+    //         $pieChartProtection = $value['pieChartProtection'];
 
-            if(!file_exists('.'.$pieChartProtection)) {
-                $chart += [$value['matricule'] => false];
-            } else {
-                $chart += [$value['matricule'] => true];
-            }
-        }
+    //         if(!file_exists('.'.$pieChartProtection)) {
+    //             $chart += [$value['matricule'] => false];
+    //         } else {
+    //             $chart += [$value['matricule'] => true];
+    //         }
+    //     }
 
-        $html = $this->renderView('info_collaborators_read_only/bsi.html.twig', [
-            'info_collaborators' => $info_collaborators, 
-        ]);  
+    //     $html = $this->renderView('info_collaborators_read_only/bsi.html.twig', [
+    //         'info_collaborators' => $info_collaborators, 
+    //     ]);  
 
-        if (in_array(false, $chart)) {
-             return new Response('Image manquante',Response::HTTP_INTERNAL_SERVER_ERROR);
-        } else {
-            return new Response(
-                $pdf->generatePDF("landscape", $html, 'AllBSI', "A4"),
-                Response::HTTP_OK,
-                ['Content-Type' => 'application/pdf']
-            );
-        }
-    }            
+    //     if (in_array(false, $chart)) {
+    //          return new Response('Image manquante',Response::HTTP_INTERNAL_SERVER_ERROR);
+    //     } else {
+    //         return new Response(
+    //             $pdf->generatePDF("landscape", $html, 'AllBSI', "A4"),
+    //             Response::HTTP_OK,
+    //             ['Content-Type' => 'application/pdf']
+    //         );
+    //     }
+    // }   
+    
+    private function imageToBase64($path) {
+        $path = $path;
+        $type = pathinfo($path, PATHINFO_EXTENSION);
+        $data = file_get_contents($path);
+        $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+        return $base64;
+    }
 }
