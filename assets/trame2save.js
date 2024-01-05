@@ -182,6 +182,115 @@ async function reloadGenerateChartImages (BSI, infos) {
     return await $.ajax(BSI);
 }
 
+function processCurrentPage(btnId, nextPage) {
+    var promises = [];
+
+    $(".information").each(function () {
+        var info = $(this).data('collaboratorjson');
+
+        if (btnId == "generateAllChartImage") {
+            var promise = new Promise(function(resolve1, reject1) {
+                generateChart(info).then(function() {
+                    try {
+                        resolve1();
+                    } catch (error) {
+                        processPages(btnId, nextPage);
+                    }
+                })
+            });
+            promises.push(promise);
+        } else if (btnId == "generateAllBSI") {
+            var promise = new Promise(function(resolve2, reject2) {
+                $.ajax({
+                    url: '/bsi/' + info.matricule,
+                    method: 'POST', 
+                    data: {
+                        infos: JSON.stringify(info),
+                    },
+                    xhrFields: {
+                        responseType: 'blob'
+                    },
+                    success: function (response, status, xhr) {
+                        var filename = "test";
+                        var disposition = xhr.getResponseHeader('Content-Disposition');
+
+                        if (disposition) {
+                            var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                            var matches = filenameRegex.exec(disposition);
+                            if (matches !== null && matches[1]) filename = matches[1].replace(/['"]/g, '');
+                        }
+                        try {
+                            var blob = new Blob([response], { type: 'application/octet-stream' });
+                            if (typeof window.navigator.msSaveBlob !== 'undefined') {
+                                window.navigator.msSaveBlob(blob, filename);
+                            } else {
+                                var URL = window.URL || window.webkitURL;
+                                var downloadUrl = URL.createObjectURL(blob);
+
+                                var a = document.createElement("a");
+                                if (typeof a.download === 'undefined') {
+                                    window.location = downloadUrl;
+                                } else {
+                                    a.href = downloadUrl;
+                                    a.download = filename;
+                                    document.body.appendChild(a);
+                                    a.target = "_blank";
+                                    a.click();
+                                }
+                            }
+                            resolve2();
+                        } catch (ex) {
+                            console.log(ex);
+                        } 
+                    },
+                    error: function () {
+                        reloadGenerateChartImages(this, [info]);
+                    }
+                });
+            });
+            promises.push(promise);
+        }
+    });
+
+    return Promise.all(promises).then(function() {
+        nextPage++;
+        localStorage.setItem('nextPage', nextPage);
+        localStorage.setItem('btnId', btnId);
+    })
+}
+
+function processPages(btnId, nextPage) {
+    let totalPages = $("#nbrPage").val()*1;
+
+    if (nextPage <= totalPages) {
+        return new Promise(function(resolveProcessPage, rejectProcessPage) {
+            processCurrentPage(btnId, nextPage)
+            .then(() => {
+                let url = new URL(location.href);
+                url.searchParams.set('page', nextPage);
+                window.location.href = url.href;
+                resolveProcessPage();
+            })
+            .catch((error) => {
+                rejectProcessPage(error);
+            });
+        });
+    
+    } else {
+        return new Promise(function(resolveProcessPage, rejectProcessPage) {
+            processCurrentPage(btnId, nextPage)
+            .then(() => {
+                localStorage.removeItem('nextPage');
+                localStorage.removeItem('btnId');
+                resolveProcessPage();
+            })
+            .catch((error) => {
+                rejectProcessPage(error);
+            });
+        });
+    }
+}
+
 $(function() {
     $(".information").each(function () {
         var info = $(this).data('collaboratorjson');
@@ -245,6 +354,7 @@ $(function() {
             });
         });
 
+
         $("#testTrame"+info.matricule).on( "click", function () {
             $.ajax({
                 url: '/testTrame/'+info.matricule,
@@ -300,8 +410,18 @@ $(function() {
                 }
             });
         });
+    });
 
-        
+
+    let btnId = localStorage.getItem('btnId');
+    let nextPage = localStorage.getItem('nextPage');
+    if (nextPage && btnId) {
+        processPages(btnId, nextPage)
+    }
+    
+    $(".btnScript").on("click", function() {
+        let nextPage = 2;
+        processPages($(this).attr('id'), nextPage);
     });
 
     // Bloqué vu que pas besoin mais à garder
