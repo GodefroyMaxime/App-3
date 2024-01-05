@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Test Trame</title>
+    </head>
+    <style>
+        html, #img_FirstPage, #img_SecondPage {
+            position: relative;
+            margin: 0;  
+            padding: 0;
+            width: 1122.5204px !important;
+            height: 793.7013px !important;
+            z-index: 1;
+        }
+
+        #img_pieChartSalaire {
+            position: absolute;
+            top: 15%;
+            right: 60%;
+            width: 35%;
+            z-index: 2;
+        }
+    </style>
+    <body> 
+        <main>
+            <div class="page">
+                <img id="img_FirstPage" class="margin-bottom" src="{{ firstPage }}" alt="firstPage">
+            </div>  
+
+            <div class="page">
+                <img id="img_SecondPage" class="margin-bottom" src="{{ secondPage }}" alt="secondPage">
+                <img id="img_pieChartSalaire" src="{{ imgPieChartSalaire }}" alt="pieChartSalaire">
+            </div>  
+        </main>
+    </body>
+</html>

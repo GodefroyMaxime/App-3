@@ -87,11 +87,11 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
 
         $html = $this->renderView('info_collaborators_read_only/bsi.html.twig', [
             'info_collaborators' => $info_collaborators,
-            'imgMarly' => $this->imageToBase64($this->getParameter('kernel.project_dir') . '/public/images/Lyreco_Marly.jpg'),
-            'imgTeams' => $this->imageToBase64($this->getParameter('kernel.project_dir') . '/public/images/Team.jpg'),
-            'imgPieChartSalaire' => $this->imageToBase64($this->getParameter('kernel.project_dir') . '/public'.$pieChartSalaire),
-            'imgBarChartProtection' => $this->imageToBase64($this->getParameter('kernel.project_dir') . '/public'.$barChartProtection),
-            'imgPieChartProtection' => $this->imageToBase64($this->getParameter('kernel.project_dir') . '/public'.$pieChartProtection),
+            'imgMarly' => $pdf->imageToBase64($this->getParameter('kernel.project_dir') . '/public/images/Lyreco_Marly.jpg'),
+            'imgTeams' => $pdf->imageToBase64($this->getParameter('kernel.project_dir') . '/public/images/Team.jpg'),
+            'imgPieChartSalaire' => $pdf->imageToBase64($this->getParameter('kernel.project_dir') . '/public'.$pieChartSalaire),
+            'imgBarChartProtection' => $pdf->imageToBase64($this->getParameter('kernel.project_dir') . '/public'.$barChartProtection),
+            'imgPieChartProtection' => $pdf->imageToBase64($this->getParameter('kernel.project_dir') . '/public'.$pieChartProtection),
         ]);  
 
         if (in_array(false, $chart)) {
@@ -139,13 +139,45 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
     //             ['Content-Type' => 'application/pdf']
     //         );
     //     }
-    // }   
+    // } 
     
-    private function imageToBase64($path) {
-        $path = $path;
-        $type = pathinfo($path, PATHINFO_EXTENSION);
-        $data = file_get_contents($path);
-        $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
-        return $base64;
-    }
+    #[Route('/testTrame/{matricule}', name: 'app_info_collaborators_read_only_testTrame', methods: ['POST'])]
+    public function testTrame(PDFService $pdf, BSIService $bsi, Request $request): Response
+    {
+        $info = [json_decode($request->request->get('infos'), true)];  
+        $info_collaborators = $bsi->addPathChartImageTable($info);
+        $chart = [];
+
+        foreach ($info_collaborators as $key => $value) {
+            $matricule = $value['matricule'];
+            $pieChartSalaire = $value['pieChartSalaire'];
+            $barChartProtection = $value['barChartProtection'];
+            $pieChartProtection = $value['pieChartProtection'];
+
+            if(!file_exists('.'.$pieChartSalaire) || !file_exists('.'.$barChartProtection) || !file_exists('.'.$pieChartProtection)) {
+                $chart += [$value['matricule'] => false];
+            } else {
+                $chart += [$value['matricule'] => true];
+            }
+        }
+
+        $html = $this->renderView('info_collaborators_read_only/testTrame.html.twig', [
+            'info_collaborators' => $info_collaborators,
+            'firstPage' => $pdf->imageToBase64($this->getParameter('kernel.project_dir') . '/public/images/testTrame/firstPage.jpg'),
+            'secondPage' => $pdf->imageToBase64($this->getParameter('kernel.project_dir') . '/public/images/testTrame/secondPage.jpg'),
+            'imgPieChartSalaire' => $pdf->imageToBase64($this->getParameter('kernel.project_dir') . '/public'.$pieChartSalaire),
+            'imgBarChartProtection' => $pdf->imageToBase64($this->getParameter('kernel.project_dir') . '/public'.$barChartProtection),
+            'imgPieChartProtection' => $pdf->imageToBase64($this->getParameter('kernel.project_dir') . '/public'.$pieChartProtection),
+        ]);  
+
+        if (in_array(false, $chart)) {
+            return new Response('Image manquante', Response::HTTP_INTERNAL_SERVER_ERROR);
+       } else {
+           return new Response(
+               $pdf->generatePDF("landscape", $html, 'Test_'.$matricule, "A4"),
+               Response::HTTP_OK,
+               ['Content-Type' => 'application/pdf']
+           );
+       }           
+    } 
 }
