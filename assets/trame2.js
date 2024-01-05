@@ -4,8 +4,9 @@ function calculatePercentage (x, y) {
     return (x*100)/(x*1+y*1);
 }
 
-function generateChart (info) {
-    return new Promise(function(resolveGenerate, rejectGenerate) {
+async function generateChart (info) {
+    var promesses = [];
+    var promesse = new Promise(function(resolveGenerate, rejectGenerate) {
 
         //Graph 1
         var totalBrut = (info.bonus)*1+(info.grossAnnualSalary)*1;
@@ -142,10 +143,16 @@ function generateChart (info) {
             layout3,
         )
 
-        chartToImage(info).then(function() {
+        /*chartToImage(info).then(function() {
             resolveGenerate();
-        });
+        });*/
     });
+
+    promesses.push(promesse)
+    promesses.push(chartToImage (info));
+    console.log(promesses);
+
+    return await Promise.all(promesses);
 }
 
 function chartToImage (info) {
