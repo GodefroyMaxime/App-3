@@ -5,8 +5,7 @@ function calculatePercentage (x, y) {
 }
 
 async function generateChart (info) {
-    var promesses = [];
-    var promesse = new Promise(function(resolveGenerate, rejectGenerate) {
+    return new Promise(async function(resolveGenerate, rejectGenerate) {
 
         //Graph 1
         var totalBrut = (info.bonus)*1+(info.grossAnnualSalary)*1;
@@ -33,7 +32,7 @@ async function generateChart (info) {
             plot_bgcolor: 'rgba(0,0,0,0)',
         };
     
-        Plotly.newPlot(
+        await Plotly.newPlot(
             'piechart'+info.matricule,
             data1,
             layout1,
@@ -104,7 +103,7 @@ async function generateChart (info) {
             plot_bgcolor: 'rgba(0,0,0,0)',
         };
     
-        Plotly.newPlot(
+        await Plotly.newPlot(
             'barchart'+info.matricule,
             data2,
             layout2,
@@ -137,29 +136,22 @@ async function generateChart (info) {
             plot_bgcolor: 'rgba(0,0,0,0)',
         };
     
-        Plotly.newPlot(
+        await Plotly.newPlot(
             'pie2chart'+info.matricule,
             data3,
             layout3,
         )
 
-        /*chartToImage(info).then(function() {
-            resolveGenerate();
-        });*/
+        await chartToImage(info)
+        resolveGenerate();
     });
-
-    promesses.push(promesse)
-    promesses.push(chartToImage (info));
-    console.log(promesses);
-
-    return await Promise.all(promesses);
 }
 
 function chartToImage (info) {
-    return new Promise(function(resolveImage, rejectImage) {
-        Plotly.toImage('piechart'+info.matricule, {format: 'png'}).then(function (dataURL1) {
-            Plotly.toImage('barchart'+info.matricule, {format: 'png'}).then(function (dataURL2) {
-                Plotly.toImage('pie2chart'+info.matricule, {format: 'png'}).then(function (dataURL3) {
+    return new Promise(async function(resolveImage, rejectImage) {
+        await Plotly.toImage('piechart'+info.matricule, {format: 'png'}).then(async function (dataURL1) {
+            await Plotly.toImage('barchart'+info.matricule, {format: 'png'}).then(async function (dataURL2) {
+                await Plotly.toImage('pie2chart'+info.matricule, {format: 'png'}).then(function (dataURL3) {
                     $.ajax({
                         url: '/infoCollaboratorsRO/donwloadChartImage',
                         method: 'POST',
@@ -301,16 +293,26 @@ function pdf2 (info) {
     });
 }
 
-function processCurrentPage (btnId) {
+async function processCurrentPage (btnId) {
     var info = $('.table').data('collaboratorsjson');
     
-    $.each(info, function () {
+    /*$.each(info, async function () {
         if (btnId == "generateAllChartImage") {
-            generateChart(this);
+            await generateChart(this);
         } else if (btnId == "generateAllBSI") {
             pdf1(this);
         }
-    });
+    });*/
+
+    for (let index = 0; index < info.length; index++) {
+        const element = info[index];
+        console.log(element);
+        //if (btnId == "generateAllChartImage") {
+            await generateChart(element);
+        // } else if (btnId == "generateAllBSI") {
+        //     await pdf1(element);
+        // }
+    }
 }
 
 $(function() {
