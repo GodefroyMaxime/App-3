@@ -174,144 +174,144 @@ function chartToImage (info) {
     });
 }
 
-async function reloadGenerateChartImages (BSI, infos) {
-    const promises = infos.map(info => generateChart(info));
+async function reloadGenerateChartImages (info) {
+    const promises = [];
+    promises.push(generateChart(info));
+    //promises.push($.ajax(BSI));
     
-    await Promise.all(promises);
-    return await $.ajax(BSI);
+    return Promise.all(promises);
 }
 
 function pdf1 (info) {
-    $.ajax({
-        url: '/bsi/'+info.matricule,
-        method: 'POST',
-        data: {
-            infos: JSON.stringify(info),
-        },
-        xhrFields: {
-            responseType: 'blob'            
-        },
-        success: function (response, status, xhr) {
-            var filename = "test";
-            var disposition = xhr.getResponseHeader('Content-Disposition');
+    return new Promise(async function(resolvePDF1, rejectPDF1) {
+        $.ajax({
+            url: '/bsi/'+info.matricule,
+            method: 'POST',
+            data: {
+                infos: JSON.stringify(info),
+            },
+            xhrFields: {
+                responseType: 'blob'            
+            },
+            success: function (response, status, xhr) {
+                var filename = "test";
+                var disposition = xhr.getResponseHeader('Content-Disposition');
 
-            if (disposition) {
-                var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-                var matches = filenameRegex.exec(disposition);
-                if (matches !== null && matches[1]) filename = matches[1].replace(/['"]/g, '');
-            }                 
-            try {
-                var blob = new Blob([response], { type: 'application/octet-stream' });
-                if (typeof window.navigator.msSaveBlob !== 'undefined') {
-                    //   IE workaround for "HTML7007: One or more blob URLs were revoked by closing the blob for which they were created. These URLs will no longer resolve as the data backing the URL has been freed."                        window.navigator.msSaveBlob(blob, filename);
-                } else {
-                    var URL = window.URL || window.webkitURL;
-                    var downloadUrl = URL.createObjectURL(blob);
-
-                    if (filename) { 
-                        // use HTML5 a[download] attribute to specify filename                            
-                        var a = document.createElement("a");
-
-                        // safari doesn't support this yet                            
-                        if (typeof a.download === 'undefined') {
-                            window.location = downloadUrl;
-                        } else {
-                            a.href = downloadUrl;
-                            a.download = filename;
-                            document.body.appendChild(a);
-                            a.target = "_blank";
-                            a.click();
-                        }
+                if (disposition) {
+                    var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                    var matches = filenameRegex.exec(disposition);
+                    if (matches !== null && matches[1]) filename = matches[1].replace(/['"]/g, '');
+                }                 
+                try {
+                    var blob = new Blob([response], { type: 'application/octet-stream' });
+                    if (typeof window.navigator.msSaveBlob !== 'undefined') {
+                        //   IE workaround for "HTML7007: One or more blob URLs were revoked by closing the blob for which they were created. These URLs will no longer resolve as the data backing the URL has been freed."                        window.navigator.msSaveBlob(blob, filename);
                     } else {
-                        window.location = downloadUrl;
-                    }
-                }   
+                        var URL = window.URL || window.webkitURL;
+                        var downloadUrl = URL.createObjectURL(blob);
 
-            } catch (ex) {
-                console.log(ex);
-            } 
-        },
-        error: function () {
-            reloadGenerateChartImages(this, [info]);
-        }
+                        if (filename) { 
+                            // use HTML5 a[download] attribute to specify filename                            
+                            var a = document.createElement("a");
+
+                            // safari doesn't support this yet                            
+                            if (typeof a.download === 'undefined') {
+                                window.location = downloadUrl;
+                            } else {
+                                a.href = downloadUrl;
+                                a.download = filename;
+                                document.body.appendChild(a);
+                                a.target = "_blank";
+                                a.click();
+                            }
+                        } else {
+                            window.location = downloadUrl;
+                        }
+                    }   
+
+                } catch (ex) {
+                    console.log(ex);
+                } 
+                resolvePDF1();
+            },
+            error: async function () {
+                await reloadGenerateChartImages(info);
+                $.ajax(this);
+            }
+        });
     });
 }
 
 function pdf2 (info) {
-    $.ajax({
-        url: '/testTrame/'+info.matricule,
-        method: 'POST',
-        data: {
-            infos: JSON.stringify(info),
-        },
-        xhrFields: {
-            responseType: 'blob'            
-        },
-        success: function (response, status, xhr) {
-            var filename = "test";
-            var disposition = xhr.getResponseHeader('Content-Disposition');
+    return new Promise(async function(resolvePDF1, rejectPDF1) {
+        $.ajax({
+            url: '/testTrame/'+info.matricule,
+            method: 'POST',
+            data: {
+                infos: JSON.stringify(info),
+            },
+            xhrFields: {
+                responseType: 'blob'            
+            },
+            success: function (response, status, xhr) {
+                var filename = "test";
+                var disposition = xhr.getResponseHeader('Content-Disposition');
 
-            if (disposition) {
-                var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-                var matches = filenameRegex.exec(disposition);
-                if (matches !== null && matches[1]) filename = matches[1].replace(/['"]/g, '');
-            }                 
-            try {
-                var blob = new Blob([response], { type: 'application/octet-stream' });
-                if (typeof window.navigator.msSaveBlob !== 'undefined') {
-                    //   IE workaround for "HTML7007: One or more blob URLs were revoked by closing the blob for which they were created. These URLs will no longer resolve as the data backing the URL has been freed."                        window.navigator.msSaveBlob(blob, filename);
-                } else {
-                    var URL = window.URL || window.webkitURL;
-                    var downloadUrl = URL.createObjectURL(blob);
-
-                    if (filename) { 
-                        // use HTML5 a[download] attribute to specify filename                            
-                        var a = document.createElement("a");
-
-                        // safari doesn't support this yet                            
-                        if (typeof a.download === 'undefined') {
-                            window.location = downloadUrl;
-                        } else {
-                            a.href = downloadUrl;
-                            a.download = filename;
-                            document.body.appendChild(a);
-                            a.target = "_blank";
-                            a.click();
-                        }
+                if (disposition) {
+                    var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                    var matches = filenameRegex.exec(disposition);
+                    if (matches !== null && matches[1]) filename = matches[1].replace(/['"]/g, '');
+                }                 
+                try {
+                    var blob = new Blob([response], { type: 'application/octet-stream' });
+                    if (typeof window.navigator.msSaveBlob !== 'undefined') {
+                        //   IE workaround for "HTML7007: One or more blob URLs were revoked by closing the blob for which they were created. These URLs will no longer resolve as the data backing the URL has been freed."                        window.navigator.msSaveBlob(blob, filename);
                     } else {
-                        window.location = downloadUrl;
-                    }
-                }   
+                        var URL = window.URL || window.webkitURL;
+                        var downloadUrl = URL.createObjectURL(blob);
 
-            } catch (ex) {
-                console.log(ex);
-            } 
-        },
-        error: function () {
-            reloadGenerateChartImages(this, [info]);
-        }
+                        if (filename) { 
+                            // use HTML5 a[download] attribute to specify filename                            
+                            var a = document.createElement("a");
+
+                            // safari doesn't support this yet                            
+                            if (typeof a.download === 'undefined') {
+                                window.location = downloadUrl;
+                            } else {
+                                a.href = downloadUrl;
+                                a.download = filename;
+                                document.body.appendChild(a);
+                                a.target = "_blank";
+                                a.click();
+                            }
+                        } else {
+                            window.location = downloadUrl;
+                        }
+                    }   
+
+                } catch (ex) {
+                    console.log(ex);
+                } 
+                resolvePDF1();
+            },
+            error: async function () {
+                await reloadGenerateChartImages(info);
+                $.ajax(this);
+            }
+        });
     });
 }
 
 async function processCurrentPage (btnId) {
     var info = $('.table').data('collaboratorsjson');
-    
-    /*$.each(info, async function () {
-        if (btnId == "generateAllChartImage") {
-            await generateChart(this);
-        } else if (btnId == "generateAllBSI") {
-            pdf1(this);
-        }
-    });*/
 
     for (let index = 0; index < info.length; index++) {
         const element = info[index];
-        console.log(element);
-        //if (btnId == "generateAllChartImage") {
+        if (btnId == "generateAllChartImage") {
             await generateChart(element);
-        // } else if (btnId == "generateAllBSI") {
-        //     await pdf1(element);
-        // }
+        } else if (btnId == "generateAllBSI") {
+            await pdf2(element);
+        }
     }
 }
 
@@ -334,8 +334,6 @@ $(function() {
     $(".btnScript").on("click", function() {
         processCurrentPage($(this).attr('id'));
     });
-
-
 
 
     // Bloqué vu que pas besoin mais à garder
