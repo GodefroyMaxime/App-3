@@ -40,8 +40,8 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
     public function donwloadChartImage(InfoCollaboratorsRepository $infoCollaboratorsRepository, Request $request, PaginatorInterface $paginator, ChartService $chart): Response
     {
         
-        // set_time_limit(0);
-        // ini_set('memory_limit', '10000M');
+        set_time_limit(0);
+        ini_set('memory_limit', '10000M');
 
         $dataImage1 = $request->request->get('image1');
         $dataImage2 = $request->request->get('image2');
@@ -68,8 +68,8 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
     public function bsi(PDFService $pdf, BSIService $bsi, Request $request): Response
     {    
         
-        // set_time_limit(0);
-        // ini_set('memory_limit', '10000M');
+        set_time_limit(0);
+        ini_set('memory_limit', '10000M');
         
         $info = [json_decode($request->request->get('infos'), true)];  
         $info_collaborators = $bsi->addPathChartImageTable($info);
@@ -149,8 +149,8 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
     public function testTrame(PDFService $pdf, BSIService $bsi, Request $request): Response
     {
         
-        // set_time_limit(0);
-        // ini_set('memory_limit', '10000M');
+        set_time_limit(0);
+        ini_set('memory_limit', '10000M');
 
         $info = [json_decode($request->request->get('infos'), true)];  
         $info_collaborators = $bsi->addPathChartImageTable($info);
