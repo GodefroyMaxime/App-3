@@ -302,18 +302,58 @@ function pdf2 (info) {
     });
 }
 
-async function processCurrentPage (btnId) {
+async function processCurrentPage (btnId, nextPage) {
+    var promises = [];
     var info = $('.table').data('collaboratorsjson');
 
     for (let index = 0; index < info.length; index++) {
         const element = info[index];
         if (btnId == "generateAllChartImage") {
-            await generateChart(element);
+            promises.push(await generateChart(element));
         } else if (btnId == "generateAllBSI") {
-            await pdf2(element);
+            promises.push(await pdf1(element));
         }
     }
+
+    return Promise.all(promises).then(function() {
+        nextPage++;
+        localStorage.setItem('nextPage', nextPage);
+        localStorage.setItem('btnId', btnId);
+    })
 }
+
+function processPages(btnId, nextPage) {
+    let totalPages = $("#nbrPage").val()*1;
+
+    if (nextPage <= totalPages) {
+        return new Promise(function(resolveProcessPage, rejectProcessPage) {
+            processCurrentPage(btnId, nextPage)
+            .then(() => {
+                let url = new URL(location.href);
+                url.searchParams.set('page', nextPage);
+                window.location.href = url.href;
+                resolveProcessPage();
+            })
+            .catch((error) => {
+                rejectProcessPage(error);
+            });
+        });
+    
+    } else {
+        return new Promise(function(resolveProcessPage, rejectProcessPage) {
+            processCurrentPage(btnId, nextPage)
+            .then(() => {
+                localStorage.removeItem('nextPage');
+                localStorage.removeItem('btnId');
+                resolveProcessPage();
+            })
+            .catch((error) => {
+                rejectProcessPage(error);
+            });
+        });
+    }
+}
+
 
 $(function() {
     $(".information").each(function () {
@@ -331,8 +371,15 @@ $(function() {
         });        
     });
 
+    let btnId = localStorage.getItem('btnId');
+    let nextPage = localStorage.getItem('nextPage');
+    if (nextPage && btnId) {
+        processPages(btnId, nextPage)
+    }
+
     $(".btnScript").on("click", function() {
-        processCurrentPage($(this).attr('id'));
+        let nextPage = 2;
+        processPages($(this).attr('id'), nextPage)
     });
 
 

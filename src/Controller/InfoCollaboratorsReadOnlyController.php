@@ -39,6 +39,10 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
     #[Route('/infoCollaboratorsRO/donwloadChartImage', name: 'app_info_collaborators_read_only_donwloadChartImage', methods: ['POST'])]
     public function donwloadChartImage(InfoCollaboratorsRepository $infoCollaboratorsRepository, Request $request, PaginatorInterface $paginator, ChartService $chart): Response
     {
+        
+        // set_time_limit(0);
+        // ini_set('memory_limit', '10000M');
+
         $dataImage1 = $request->request->get('image1');
         $dataImage2 = $request->request->get('image2');
         $dataImage3 = $request->request->get('image3'); 
@@ -144,6 +148,10 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
     #[Route('/testTrame/{matricule}', name: 'app_info_collaborators_read_only_testTrame', methods: ['POST'])]
     public function testTrame(PDFService $pdf, BSIService $bsi, Request $request): Response
     {
+        
+        // set_time_limit(0);
+        // ini_set('memory_limit', '10000M');
+
         $info = [json_decode($request->request->get('infos'), true)];  
         $info_collaborators = $bsi->addPathChartImageTable($info);
         $chart = [];
