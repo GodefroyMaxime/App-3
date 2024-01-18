@@ -193,45 +193,45 @@ function pdf1 (info) {
             xhrFields: {
                 responseType: 'blob'            
             },
-            success: function (response, status, xhr) {
-                var filename = "test";
-                var disposition = xhr.getResponseHeader('Content-Disposition');
+            success: function (/*response, status, xhr*/) {
+                // var filename = "test";
+                // var disposition = xhr.getResponseHeader('Content-Disposition');
 
-                if (disposition) {
-                    var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-                    var matches = filenameRegex.exec(disposition);
-                    if (matches !== null && matches[1]) filename = matches[1].replace(/['"]/g, '');
-                }                 
-                try {
-                    var blob = new Blob([response], { type: 'application/octet-stream' });
-                    if (typeof window.navigator.msSaveBlob !== 'undefined') {
-                        //   IE workaround for "HTML7007: One or more blob URLs were revoked by closing the blob for which they were created. These URLs will no longer resolve as the data backing the URL has been freed."                        window.navigator.msSaveBlob(blob, filename);
-                    } else {
-                        var URL = window.URL || window.webkitURL;
-                        var downloadUrl = URL.createObjectURL(blob);
+                // if (disposition) {
+                //     var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                //     var matches = filenameRegex.exec(disposition);
+                //     if (matches !== null && matches[1]) filename = matches[1].replace(/['"]/g, '');
+                // }                 
+                // try {
+                //     var blob = new Blob([response], { type: 'application/octet-stream' });
+                //     if (typeof window.navigator.msSaveBlob !== 'undefined') {
+                //         //   IE workaround for "HTML7007: One or more blob URLs were revoked by closing the blob for which they were created. These URLs will no longer resolve as the data backing the URL has been freed."                        window.navigator.msSaveBlob(blob, filename);
+                //     } else {
+                //         var URL = window.URL || window.webkitURL;
+                //         var downloadUrl = URL.createObjectURL(blob);
 
-                        if (filename) { 
-                            // use HTML5 a[download] attribute to specify filename                            
-                            var a = document.createElement("a");
+                //         if (filename) { 
+                //             // use HTML5 a[download] attribute to specify filename                            
+                //             var a = document.createElement("a");
 
-                            // safari doesn't support this yet                            
-                            if (typeof a.download === 'undefined') {
-                                window.location = downloadUrl;
-                            } else {
-                                a.href = downloadUrl;
-                                a.download = filename;
-                                document.body.appendChild(a);
-                                a.target = "_blank";
-                                a.click();
-                            }
-                        } else {
-                            window.location = downloadUrl;
-                        }
-                    }   
+                //             // safari doesn't support this yet                            
+                //             if (typeof a.download === 'undefined') {
+                //                 window.location = downloadUrl;
+                //             } else {
+                //                 a.href = downloadUrl;
+                //                 a.download = filename;
+                //                 document.body.appendChild(a);
+                //                 a.target = "_blank";
+                //                 a.click();
+                //             }
+                //         } else {
+                //             window.location = downloadUrl;
+                //         }
+                //     }   
 
-                } catch (ex) {
-                    console.log(ex);
-                } 
+                // } catch (ex) {
+                //     console.log(ex);
+                // } 
                 resolvePDF1();
             },
             error: async function () {
@@ -243,7 +243,7 @@ function pdf1 (info) {
 }
 
 function pdf2 (info) {
-    return new Promise(async function(resolvePDF1, rejectPDF1) {
+    return new Promise(async function(resolvePDF2, rejectPDF2) {
         $.ajax({
             url: '/testTrame/'+info.matricule,
             method: 'POST',
@@ -253,46 +253,46 @@ function pdf2 (info) {
             xhrFields: {
                 responseType: 'blob'            
             },
-            success: function (response, status, xhr) {
-                var filename = "test";
-                var disposition = xhr.getResponseHeader('Content-Disposition');
+            success: function (/*response, status, xhr*/) {
+                // var filename = "test";
+                // var disposition = xhr.getResponseHeader('Content-Disposition');
 
-                if (disposition) {
-                    var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-                    var matches = filenameRegex.exec(disposition);
-                    if (matches !== null && matches[1]) filename = matches[1].replace(/['"]/g, '');
-                }                 
-                try {
-                    var blob = new Blob([response], { type: 'application/octet-stream' });
-                    if (typeof window.navigator.msSaveBlob !== 'undefined') {
-                        //   IE workaround for "HTML7007: One or more blob URLs were revoked by closing the blob for which they were created. These URLs will no longer resolve as the data backing the URL has been freed."                        window.navigator.msSaveBlob(blob, filename);
-                    } else {
-                        var URL = window.URL || window.webkitURL;
-                        var downloadUrl = URL.createObjectURL(blob);
+                // if (disposition) {
+                //     var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                //     var matches = filenameRegex.exec(disposition);
+                //     if (matches !== null && matches[1]) filename = matches[1].replace(/['"]/g, '');
+                // }                 
+                // try {
+                //     var blob = new Blob([response], { type: 'application/octet-stream' });
+                //     if (typeof window.navigator.msSaveBlob !== 'undefined') {
+                //         //   IE workaround for "HTML7007: One or more blob URLs were revoked by closing the blob for which they were created. These URLs will no longer resolve as the data backing the URL has been freed."                        window.navigator.msSaveBlob(blob, filename);
+                //     } else {
+                //         var URL = window.URL || window.webkitURL;
+                //         var downloadUrl = URL.createObjectURL(blob);
 
-                        if (filename) { 
-                            // use HTML5 a[download] attribute to specify filename                            
-                            var a = document.createElement("a");
+                //         if (filename) { 
+                //             // use HTML5 a[download] attribute to specify filename                            
+                //             var a = document.createElement("a");
 
-                            // safari doesn't support this yet                            
-                            if (typeof a.download === 'undefined') {
-                                window.location = downloadUrl;
-                            } else {
-                                a.href = downloadUrl;
-                                a.download = filename;
-                                document.body.appendChild(a);
-                                a.target = "_blank";
-                                a.click();
-                            }
-                        } else {
-                            window.location = downloadUrl;
-                        }
-                    }   
+                //             // safari doesn't support this yet                            
+                //             if (typeof a.download === 'undefined') {
+                //                 window.location = downloadUrl;
+                //             } else {
+                //                 a.href = downloadUrl;
+                //                 a.download = filename;
+                //                 document.body.appendChild(a);
+                //                 a.target = "_blank";
+                //                 a.click();
+                //             }
+                //         } else {
+                //             window.location = downloadUrl;
+                //         }
+                //     }   
 
-                } catch (ex) {
-                    console.log(ex);
-                } 
-                resolvePDF1();
+                // } catch (ex) {
+                //     console.log(ex);
+                // } 
+                resolvePDF2();
             },
             error: async function () {
                 await reloadGenerateChartImages(info);
@@ -302,12 +302,13 @@ function pdf2 (info) {
     });
 }
 
-async function processCurrentPage (btnId, nextPage) {
+async function processCurrentPage (btnId, nextPage, allMatricule) {
     var promises = [];
     var info = $('.table').data('collaboratorsjson');
 
     for (let index = 0; index < info.length; index++) {
         const element = info[index];
+        allMatricule.push(element.matricule);
         if (btnId == "generateAllChartImage") {
             promises.push(await generateChart(element));
         } else if (btnId == "generateAllBSI") {
@@ -317,17 +318,18 @@ async function processCurrentPage (btnId, nextPage) {
 
     return Promise.all(promises).then(function() {
         nextPage++;
+        localStorage.setItem('allMatricule', JSON.stringify(allMatricule));
         localStorage.setItem('nextPage', nextPage);
         localStorage.setItem('btnId', btnId);
     })
 }
 
-function processPages(btnId, nextPage) {
+function processPages(btnId, nextPage, allMatricule) {
     let totalPages = $("#nbrPage").val()*1;
 
     if (nextPage <= totalPages) {
         return new Promise(function(resolveProcessPage, rejectProcessPage) {
-            processCurrentPage(btnId, nextPage)
+            processCurrentPage(btnId, nextPage, allMatricule)
             .then(() => {
                 let url = new URL(location.href);
                 url.searchParams.set('page', nextPage);
@@ -341,10 +343,63 @@ function processPages(btnId, nextPage) {
     
     } else {
         return new Promise(function(resolveProcessPage, rejectProcessPage) {
-            processCurrentPage(btnId, nextPage)
+            processCurrentPage(btnId, nextPage, allMatricule)
             .then(() => {
+                localStorage.removeItem('allMatricule');
                 localStorage.removeItem('nextPage');
                 localStorage.removeItem('btnId');
+
+                $.ajax({
+                    url: '/downloadZIP',
+                    method: 'POST',
+                    data:  {
+                        allMatricule: JSON.stringify(allMatricule),
+                    },
+                    xhrFields: {
+                        responseType: 'blob'            
+                    },
+                    success: function (response, status, xhr) {
+                        var filename = "test";
+                        var disposition = xhr.getResponseHeader('Content-Disposition');
+        
+                        if (disposition) {
+                            var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                            var matches = filenameRegex.exec(disposition);
+                            if (matches !== null && matches[1]) filename = matches[1].replace(/['"]/g, '');
+                        }                 
+                        try {
+                            var blob = new Blob([response], { type: 'application/octet-stream' });
+                            if (typeof window.navigator.msSaveBlob !== 'undefined') {
+                                //   IE workaround for "HTML7007: One or more blob URLs were revoked by closing the blob for which they were created. These URLs will no longer resolve as the data backing the URL has been freed."                        window.navigator.msSaveBlob(blob, filename);
+                            } else {
+                                var URL = window.URL || window.webkitURL;
+                                var downloadUrl = URL.createObjectURL(blob);
+        
+                                if (filename) { 
+                                    // use HTML5 a[download] attribute to specify filename                            
+                                    var a = document.createElement("a");
+        
+                                    // safari doesn't support this yet                            
+                                    if (typeof a.download === 'undefined') {
+                                        window.location = downloadUrl;
+                                    } else {
+                                        a.href = downloadUrl;
+                                        a.download = filename;
+                                        document.body.appendChild(a);
+                                        a.target = "_blank";
+                                        a.click();
+                                    }
+                                } else {
+                                    window.location = downloadUrl;
+                                }
+                            }   
+        
+                        } catch (ex) {
+                            console.log(ex);
+                        } 
+                    }
+                });
+
                 resolveProcessPage();
             })
             .catch((error) => {
@@ -373,13 +428,15 @@ $(function() {
 
     let btnId = localStorage.getItem('btnId');
     let nextPage = localStorage.getItem('nextPage');
-    if (nextPage && btnId) {
-        processPages(btnId, nextPage)
+    let allMatricule = JSON.parse(localStorage.getItem('allMatricule'));
+    if (nextPage && btnId && allMatricule) {
+        processPages(btnId, nextPage, allMatricule);
     }
 
     $(".btnScript").on("click", function() {
+        var allMatricule = [];
         let nextPage = 2;
-        processPages($(this).attr('id'), nextPage)
+        processPages($(this).attr('id'), nextPage, allMatricule);
     });
 
 

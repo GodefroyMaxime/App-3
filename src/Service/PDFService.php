@@ -22,6 +22,21 @@ class PDFService
             "Attachement"=> true,
         ]);
     }
+
+    public function downloadPDF($path, $orientation, $html, $title = "default", $size = "A4") {
+        $options = new Options();
+        $options->setIsRemoteEnabled(true);
+        //$options->setDebugLayout(true); Debug CSS
+
+        $pdf = new Dompdf($options);
+
+        $pdf->setPaper($size, $orientation);
+
+        $pdf->loadHtml($html);
+        $pdf->render();
+        $pdfContent = $pdf->output();
+        file_put_contents($path.'/'.$title.'.'.'pdf', $pdfContent);
+    }
     
     public function imageToBase64($path) {
         $path = $path;

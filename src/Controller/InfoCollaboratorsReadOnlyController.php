@@ -102,7 +102,7 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
              return new Response('Image manquante', Response::HTTP_INTERNAL_SERVER_ERROR);
         } else {
             return new Response(
-                $pdf->generatePDF("landscape", $html, 'BSI_'.$matricule, "A4"),
+                $pdf->downloadPDF('BSI', "landscape", $html, 'BSI_'.$matricule, "A4"),
                 Response::HTTP_OK,
                 ['Content-Type' => 'application/pdf']
             );
@@ -155,7 +155,7 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
         $info = [json_decode($request->request->get('infos'), true)];  
         $info_collaborators = $bsi->addPathChartImageTable($info);
         $chart = [];
-
+        
         foreach ($info_collaborators as $key => $value) {
             $matricule = $value['matricule'];
             $pieChartSalaire = $value['pieChartSalaire'];
@@ -182,10 +182,38 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
             return new Response('Image manquante', Response::HTTP_INTERNAL_SERVER_ERROR);
        } else {
            return new Response(
-               $pdf->generatePDF("landscape", $html, 'Test_'.$matricule, "A4"),
+            $pdf->downloadPDF('BSI', "landscape", $html, 'Test_'.$matricule, "A4"),
                Response::HTTP_OK,
                ['Content-Type' => 'application/pdf']
            );
        }           
     } 
+
+    #[Route('/downloadZIP', name: 'app_info_collaborators_read_only_downloadZIP', methods: ['POST'])]
+    public function downloadZIP(BSIService $bsi, Request $request): Response
+    {
+        set_time_limit(0);
+        ini_set('memory_limit', '10000M');
+        
+        $allMatricule = json_decode($request->request->get('allMatricule'), true);
+
+        foreach ($allMatricule as $matricule) {
+            $bsi->addZipFile('BSI_' . $matricule . '.pdf');
+        }
+
+        $zipFilename = $bsi->finalizeZip();
+
+        if (!file_exists($zipFilename)) {
+            throw $this->createNotFoundException("Le fichier ZIP n'a pas pu être trouvé.");
+        }
+
+        $response = new Response(file_get_contents($zipFilename));
+        $response->headers->set('Content-Type', 'application/zip');
+        $response->headers->set('Content-Disposition', 'attachment; filename="' . basename($zipFilename) . '"');
+        $response->headers->set('Content-Length', filesize($zipFilename));
+
+        unlink($zipFilename);
+
+        return $response;
+    }
 }
