@@ -4,6 +4,14 @@ function calculatePercentage (x, y) {
     return (x*100)/(x*1+y*1);
 }
 
+function progressBar (iteration, total) {
+    return new Promise(function(resolve4, reject4) {
+        var progressBar = Math.round($('.progress').length/total*iteration*100*100)/100;
+        document.getElementById("progress-bar-chart").style.width = progressBar + "%";
+        $("#progress-bar-chart").text(progressBar + "%");
+    });
+}
+
 async function generateChart (info) {
     return new Promise(async function(resolveGenerate, rejectGenerate) {
 
@@ -165,7 +173,7 @@ function chartToImage (info) {
                             resolveImage();
                         },
                         error: function () {
-                            location.reload();
+                            chartToImage(info);
                         }
                     });
                 });
@@ -302,11 +310,12 @@ function pdf2 (info) {
     });
 }
 
-async function processCurrentPage (btnId, nextPage, allMatricule) {
+async function processCurrentPage (btnId, nextPage, allMatricule, progressBarIndex, totalCollaborators) {
     var promises = [];
     var info = $('.table').data('collaboratorsjson');
 
     for (let index = 0; index < info.length; index++) {
+        progressBar(progressBarIndex++, totalCollaborators);
         const element = info[index];
         allMatricule.push(element.matricule);
         if (btnId == "generateAllChartImage") {
@@ -318,18 +327,20 @@ async function processCurrentPage (btnId, nextPage, allMatricule) {
 
     return Promise.all(promises).then(function() {
         nextPage++;
+        localStorage.setItem('progressBarIndex', progressBarIndex);
         localStorage.setItem('allMatricule', JSON.stringify(allMatricule));
         localStorage.setItem('nextPage', nextPage);
         localStorage.setItem('btnId', btnId);
     })
 }
 
-function processPages(btnId, nextPage, allMatricule) {
+function processPages(btnId, nextPage, progressBarIndex, allMatricule) {
+    let totalCollaborators = $("#totalCollaborators").val()*1;
     let totalPages = $("#nbrPage").val()*1;
 
     if (nextPage <= totalPages) {
         return new Promise(function(resolveProcessPage, rejectProcessPage) {
-            processCurrentPage(btnId, nextPage, allMatricule)
+            processCurrentPage(btnId, nextPage, allMatricule, progressBarIndex, totalCollaborators)
             .then(() => {
                 let url = new URL(location.href);
                 url.searchParams.set('page', nextPage);
@@ -343,8 +354,10 @@ function processPages(btnId, nextPage, allMatricule) {
     
     } else {
         return new Promise(function(resolveProcessPage, rejectProcessPage) {
-            processCurrentPage(btnId, nextPage, allMatricule)
+            
+            processCurrentPage(btnId, nextPage, allMatricule, progressBarIndex, totalCollaborators)
             .then(() => {
+                localStorage.removeItem('progressBarIndex');
                 localStorage.removeItem('allMatricule');
                 localStorage.removeItem('nextPage');
                 localStorage.removeItem('btnId');
@@ -426,17 +439,19 @@ $(function() {
         });        
     });
 
+    let progressBarIndex = localStorage.getItem('progressBarIndex');
     let btnId = localStorage.getItem('btnId');
     let nextPage = localStorage.getItem('nextPage');
     let allMatricule = JSON.parse(localStorage.getItem('allMatricule'));
     if (nextPage && btnId && allMatricule) {
-        processPages(btnId, nextPage, allMatricule);
+        processPages(btnId, nextPage, progressBarIndex, allMatricule);
     }
 
     $(".btnScript").on("click", function() {
         var allMatricule = [];
         let nextPage = 2;
-        processPages($(this).attr('id'), nextPage, allMatricule);
+        let progressBarIndex = 1;
+        processPages($(this).attr('id'), nextPage, progressBarIndex, allMatricule);
     });
 
 

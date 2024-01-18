@@ -15,6 +15,10 @@
     </style>
 
     <h1>InfoCollaborators index</h1>
+
+    <div class="progress" style="width: 25%;">
+        <div id="progress-bar-chart" class="progress-bar bg-success" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
     
     <table class="table" data-collaboratorsjson="{{ info_collaborators|serialize(format = 'json') }}">
         <thead>
@@ -75,6 +79,7 @@
         </tbody>
     </table>
     {{ knp_pagination_render(info_collaborators)}}
+    <input id="totalCollaborators" name="totalCollaborators" type="hidden" value="{{ all_collaborators|length }}" />
     <input id="nbrPage" name="nbrPage" type="hidden" value="{{ info_collaborators.getPageCount }}" />
     
     <button type="button" id="btnInfoSup" class="btn btn-primary" data-toggle="button" aria-pressed="false" autocomplete="off">Afficher plus d'information</button>

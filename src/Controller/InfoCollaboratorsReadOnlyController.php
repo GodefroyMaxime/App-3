@@ -24,6 +24,7 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
             100
         );
         return $this->render('info_collaborators_read_only/index.html.twig', [
+            'all_collaborators' => $infoCollaboratorsRepository->findAll(),
             'info_collaborators' => $pagination,
         ]);
     }    
@@ -60,6 +61,7 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
             100
         );
         return $this->render('info_collaborators_read_only/index.html.twig', [
+            'all_collaborators' => $infoCollaboratorsRepository->findAll(),
             'info_collaborators' => $pagination,
         ]);
     }
