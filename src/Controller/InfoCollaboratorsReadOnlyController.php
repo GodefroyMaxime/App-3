@@ -109,42 +109,6 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
         }             
     }   
  
-    // Bloqué vu que pas besoin mais à garder
-    // #[Route('/AllBSI', name: 'app_info_collaborators_read_only_all_bsi', methods: ['POST'])]
-    // public function allbsi(PDFService $pdf, BSIService $bsi, Request $request): Response
-    // {        
-    //     set_time_limit(0);
-    //     ini_set('memory_limit', '10000M');
-        
-    //     $infos = json_decode($request->request->get('infos'), true); 
-    //     $info_collaborators = $bsi->addPathChartImageTable($infos);
-    //     $chart = [];
-    //     foreach ($info_collaborators as $key => $value) {
-            
-    //         $pieChartProtection = $value['pieChartProtection'];
-
-    //         if(!file_exists('.'.$pieChartProtection)) {
-    //             $chart += [$value['matricule'] => false];
-    //         } else {
-    //             $chart += [$value['matricule'] => true];
-    //         }
-    //     }
-
-    //     $html = $this->renderView('info_collaborators_read_only/bsi.html.twig', [
-    //         'info_collaborators' => $info_collaborators, 
-    //     ]);  
-
-    //     if (in_array(false, $chart)) {
-    //          return new Response('Image manquante',Response::HTTP_INTERNAL_SERVER_ERROR);
-    //     } else {
-    //         return new Response(
-    //             $pdf->generatePDF("landscape", $html, 'AllBSI', "A4"),
-    //             Response::HTTP_OK,
-    //             ['Content-Type' => 'application/pdf']
-    //         );
-    //     }
-    // } 
-    
     #[Route('/testTrame/{matricule}', name: 'app_info_collaborators_read_only_testTrame', methods: ['POST'])]
     public function testTrame(PDFService $pdf, BSIService $bsi, Request $request): Response
     {
@@ -218,4 +182,40 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
 
         return $response;
     }
+
+    // Bloqué vu que pas besoin mais à garder
+    // #[Route('/AllBSI', name: 'app_info_collaborators_read_only_all_bsi', methods: ['POST'])]
+    // public function allbsi(PDFService $pdf, BSIService $bsi, Request $request): Response
+    // {        
+    //     set_time_limit(0);
+    //     ini_set('memory_limit', '10000M');
+        
+    //     $infos = json_decode($request->request->get('infos'), true); 
+    //     $info_collaborators = $bsi->addPathChartImageTable($infos);
+    //     $chart = [];
+    //     foreach ($info_collaborators as $key => $value) {
+            
+    //         $pieChartProtection = $value['pieChartProtection'];
+
+    //         if(!file_exists('.'.$pieChartProtection)) {
+    //             $chart += [$value['matricule'] => false];
+    //         } else {
+    //             $chart += [$value['matricule'] => true];
+    //         }
+    //     }
+
+    //     $html = $this->renderView('info_collaborators_read_only/bsi.html.twig', [
+    //         'info_collaborators' => $info_collaborators, 
+    //     ]);  
+
+    //     if (in_array(false, $chart)) {
+    //          return new Response('Image manquante',Response::HTTP_INTERNAL_SERVER_ERROR);
+    //     } else {
+    //         return new Response(
+    //             $pdf->generatePDF("landscape", $html, 'AllBSI', "A4"),
+    //             Response::HTTP_OK,
+    //             ['Content-Type' => 'application/pdf']
+    //         );
+    //     }
+    // } 
 }
