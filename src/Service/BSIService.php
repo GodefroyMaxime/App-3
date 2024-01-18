@@ -13,7 +13,7 @@ class BSIService
     public function __construct()
     {
         $this->zip = new ZipArchive();
-        $this->zipName = 'collaborators.zip'; // Name of the zip file
+        $this->zipName = 'collaborators.zip';
     }
 
     public function addPathChartImageTable ($table) {
@@ -30,7 +30,7 @@ class BSIService
     {
         if (!$this->isZipOpened) {
             if ($this->zip->open($this->zipName, ZipArchive::CREATE) !== true) {
-                throw new \Exception("Cannot open {$this->zipName}");
+                throw new \Exception("Impossible d'ouvrir {$this->zipName}");
             }
             $this->isZipOpened = true;
         }
@@ -39,7 +39,7 @@ class BSIService
         if (file_exists($pdfPath)) {
             $this->zip->addFile($pdfPath, $pdfName);
         } else {
-            // Optionally handle the case where the PDF file doesn't exist
+            throw new \Exception("Le fichier PDF {$pdfPath} n'existe pas.");
         }
     }
 

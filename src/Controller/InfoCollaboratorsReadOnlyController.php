@@ -182,9 +182,9 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
             return new Response('Image manquante', Response::HTTP_INTERNAL_SERVER_ERROR);
        } else {
            return new Response(
-            $pdf->downloadPDF('BSI', "landscape", $html, 'Test_'.$matricule, "A4"),
-               Response::HTTP_OK,
-               ['Content-Type' => 'application/pdf']
+                $pdf->downloadPDF('BSI', "landscape", $html, 'Test_'.$matricule, "A4"),
+                Response::HTTP_OK,
+                ['Content-Type' => 'application/pdf']
            );
        }           
     } 
@@ -207,11 +207,13 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
             throw $this->createNotFoundException("Le fichier ZIP n'a pas pu être trouvé.");
         }
 
-        $response = new Response(file_get_contents($zipFilename));
-        $response->headers->set('Content-Type', 'application/zip');
-        $response->headers->set('Content-Disposition', 'attachment; filename="' . basename($zipFilename) . '"');
-        $response->headers->set('Content-Length', filesize($zipFilename));
-
+        $response = new Response(
+            file_get_contents($zipFilename),
+            Response::HTTP_OK,
+            ['Content-Type'=>'application/zip',
+            'Content-Disposition'=>'attachment; filename="' . basename($zipFilename) . '"',
+            'Content-Length'=>filesize($zipFilename)]
+        );
         unlink($zipFilename);
 
         return $response;
