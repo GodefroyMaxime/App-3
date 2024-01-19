@@ -18,6 +18,10 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
     #[Route('/infoCollaboratorsRO', name: 'app_info_collaborators_read_only_index', methods: ['GET'])]
     public function index(InfoCollaboratorsRepository $infoCollaboratorsRepository, Request $request, PaginatorInterface $paginator): Response
     {
+        
+        set_time_limit(0);
+        ini_set('memory_limit', '10000M');
+
         $pagination = $paginator->paginate(
             $infoCollaboratorsRepository->paginationQuery(),
             $request->query->get('page', 1),

@@ -173,7 +173,7 @@ function chartToImage (info) {
                             resolveImage();
                         },
                         error: function () {
-                            chartToImage(info);
+                            reloadGenerateChartImages(this, [info]);
                         }
                     });
                 });
@@ -185,7 +185,7 @@ function chartToImage (info) {
 async function reloadGenerateChartImages (info) {
     const promises = [];
     promises.push(generateChart(info));
-    //promises.push($.ajax(BSI));
+    promises.push($.ajax(BSI));
     
     return Promise.all(promises);
 }
@@ -311,6 +311,9 @@ function pdf2 (info) {
 }
 
 async function processCurrentPage (btnId, nextPage, allMatricule, progressBarIndex, totalCollaborators) {
+    $("#blockingOverlay").show();
+    $("body").css("cursor", "wait");
+
     var promises = [];
     var info = $('.table').data('collaboratorsjson');
 
@@ -326,6 +329,8 @@ async function processCurrentPage (btnId, nextPage, allMatricule, progressBarInd
     }
 
     return Promise.all(promises).then(function() {
+        $("#blockingOverlay").hide();
+        $("body").css("cursor", "auto");
         nextPage++;
         localStorage.setItem('progressBarIndex', progressBarIndex);
         localStorage.setItem('allMatricule', JSON.stringify(allMatricule));
@@ -335,6 +340,7 @@ async function processCurrentPage (btnId, nextPage, allMatricule, progressBarInd
 }
 
 function processPages(btnId, nextPage, progressBarIndex, allMatricule) {
+
     let totalCollaborators = $("#totalCollaborators").val()*1;
     let totalPages = $("#nbrPage").val()*1;
 
@@ -354,7 +360,6 @@ function processPages(btnId, nextPage, progressBarIndex, allMatricule) {
     
     } else {
         return new Promise(function(resolveProcessPage, rejectProcessPage) {
-            
             processCurrentPage(btnId, nextPage, allMatricule, progressBarIndex, totalCollaborators)
             .then(() => {
                 localStorage.removeItem('progressBarIndex');
@@ -414,6 +419,8 @@ function processPages(btnId, nextPage, progressBarIndex, allMatricule) {
                 });
 
                 resolveProcessPage();
+                
+                $(".progress").hide()
             })
             .catch((error) => {
                 rejectProcessPage(error);
@@ -444,10 +451,12 @@ $(function() {
     let nextPage = localStorage.getItem('nextPage');
     let allMatricule = JSON.parse(localStorage.getItem('allMatricule'));
     if (nextPage && btnId && allMatricule) {
+        $(".progress").show()
         processPages(btnId, nextPage, progressBarIndex, allMatricule);
     }
 
     $(".btnScript").on("click", function() {
+        $(".progress").show()
         var allMatricule = [];
         let nextPage = 2;
         let progressBarIndex = 1;
