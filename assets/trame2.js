@@ -185,7 +185,7 @@ function chartToImage (info) {
 async function reloadGenerateChartImages (info) {
     const promises = [];
     promises.push(generateChart(info));
-    promises.push($.ajax(BSI));
+    //promises.push($.ajax(BSI));
     
     return Promise.all(promises);
 }
