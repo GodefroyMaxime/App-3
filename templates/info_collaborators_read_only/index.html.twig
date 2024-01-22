@@ -48,6 +48,11 @@
 
     <h1>InfoCollaborators index</h1>
 
+    {{ form_start(form) }}
+        {{ form_widget(form) }}
+        <button type="submit">Filtrer</button>
+    {{ form_end(form) }}
+
     <table class="table" data-collaboratorsjson="{{ info_collaborators|serialize(format = 'json') }}">
         <thead>
             <tr>

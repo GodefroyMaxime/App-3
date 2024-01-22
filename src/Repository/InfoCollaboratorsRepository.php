@@ -24,11 +24,11 @@ class InfoCollaboratorsRepository extends ServiceEntityRepository
    /**
     * @return InfoCollaborators Returns a query of InfoCollaborators objects
     */
-   public function paginationQuery()
+   public function paginationQuery():  \Doctrine\ORM\QueryBuilder
    {
        return $this->createQueryBuilder('i')
            ->orderBy('i.id', 'ASC')
-           ->getQuery()
+           //->getQuery()
        ;
    }
 

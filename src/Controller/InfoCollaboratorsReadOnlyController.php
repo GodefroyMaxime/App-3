@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\InfoCollaborators;
+use App\Form\InfoCollaboratorsType;
 use App\Repository\InfoCollaboratorsRepository;
 use App\Service\BSIService;
 use App\Service\ChartService;
@@ -11,27 +12,50 @@ use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Messenger\Transport\Serialization\Serializer;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Encoder\XmlEncoder;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 
 class InfoCollaboratorsReadOnlyController extends AbstractController
 {
-    #[Route('/infoCollaboratorsRO', name: 'app_info_collaborators_read_only_index', methods: ['GET'])]
+    #[Route('/infoCollaboratorsRO', name: 'app_info_collaborators_read_only_index',  methods: ['GET', 'POST'])]
     public function index(InfoCollaboratorsRepository $infoCollaboratorsRepository, Request $request, PaginatorInterface $paginator): Response
     {
-        
         set_time_limit(0);
         ini_set('memory_limit', '10000M');
 
+        $filterForm = $this->createForm(InfoCollaboratorsType::class);
+        $filterForm->handleRequest($request);
+
+        $queryBuilder = $infoCollaboratorsRepository->paginationQuery();
+
+        if ($filterForm->isSubmitted() && $filterForm->isValid()) {
+            $filterData = $filterForm->getData();
+
+            foreach ($filterData as $field => $value) {
+                if ($value !== null && $value !== '') {
+                    $queryBuilder->andWhere("i.$field = :$field")
+                                ->setParameter($field, $value);
+                }
+            }
+        }
+
         $pagination = $paginator->paginate(
-            $infoCollaboratorsRepository->paginationQuery(),
-            $request->query->get('page', 1),
+            $queryBuilder->getQuery(),
+            $request->query->getInt('page', 1),
             100
         );
+
+        //dd($queryBuilder->getQuery()->getSQL());
+
         return $this->render('info_collaborators_read_only/index.html.twig', [
             'all_collaborators' => $infoCollaboratorsRepository->findAll(),
+            'form' => $filterForm->createView(),
             'info_collaborators' => $pagination,
         ]);
-    }    
+    }  
 
     #[Route('/infoCollaboratorsRO/{id}', name: 'app_info_collaborators_read_only_show', methods: ['GET'])]
     public function show(InfoCollaborators $infoCollaborator): Response
