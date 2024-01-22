@@ -12,11 +12,9 @@ use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Messenger\Transport\Serialization\Serializer;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Serializer;
 
 class InfoCollaboratorsReadOnlyController extends AbstractController
 {
@@ -29,13 +27,18 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
         $filterForm = $this->createForm(InfoCollaboratorsType::class);
         $filterForm->handleRequest($request);
 
+        $serializer = new Serializer([new ObjectNormalizer()]);
+
         $queryBuilder = $infoCollaboratorsRepository->paginationQuery();
 
         if ($filterForm->isSubmitted() && $filterForm->isValid()) {
-            $filterData = $filterForm->getData();
+            
+            $filterData = $serializer->normalize($filterForm->getData());
 
             foreach ($filterData as $field => $value) {
+                
                 if ($value !== null && $value !== '') {
+                    
                     $queryBuilder->andWhere("i.$field = :$field")
                                 ->setParameter($field, $value);
                 }
