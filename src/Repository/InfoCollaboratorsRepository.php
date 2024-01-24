@@ -32,6 +32,23 @@ class InfoCollaboratorsRepository extends ServiceEntityRepository
        ;
    }
 
+   public function findColumnOneByOne($column, array $parameters = [])
+    {
+        $query = $this->createQueryBuilder('i')
+            ->select("DISTINCT i." . $column);
+
+        if (!empty($parameters)) {
+            foreach ($parameters as $key => $value) {
+                $query->andWhere('i.' . $key . ' = :' . $key)
+                    ->setParameter(':' . $key, $value);
+            }
+        }
+        
+        $result = $query->getQuery()->getResult();
+    
+        return array_column($result, $column, $column);
+    }
+
 //    public function findOneBySomeField($value): ?InfoCollaborators
 //    {
 //        return $this->createQueryBuilder('i')
