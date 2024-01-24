@@ -8,11 +8,13 @@ use App\Repository\InfoCollaboratorsRepository;
 use App\Service\BSIService;
 use App\Service\ChartService;
 use App\Service\PDFService;
+use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 
@@ -34,15 +36,20 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
         if ($filterForm->isSubmitted() && $filterForm->isValid()) {
             
             $filterData = $serializer->normalize($filterForm->getData());
-
             foreach ($filterData as $field => $value) {
-                
                 if ($value !== null && $value !== '') {
-                    
-                    $queryBuilder->andWhere("i.$field = :$field")
-                                ->setParameter($field, $value);
+                    if ($value instanceof \DateTimeInterface) {
+                        $queryBuilder->andWhere("i.$field = :$field")
+                                     ->setParameter($field, $value->format('Y-m-d'));
+                    } else {
+                        $queryBuilder->andWhere("i.$field = :$field")
+                                     ->setParameter($field, $value);
+                    }
+
+                    $filterForm = $this->createForm(InfoCollaboratorsType::class, $serializer->denormalize([$field => $value], InfoCollaborators::class));
                 }
             }
+
         }
 
         $pagination = $paginator->paginate(
@@ -50,8 +57,6 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
             $request->query->getInt('page', 1),
             100
         );
-
-        //dd($queryBuilder->getQuery()->getSQL());
 
         return $this->render('info_collaborators_read_only/index.html.twig', [
             'all_collaborators' => $infoCollaboratorsRepository->findAll(),
