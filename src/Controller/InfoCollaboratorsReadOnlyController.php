@@ -8,13 +8,11 @@ use App\Repository\InfoCollaboratorsRepository;
 use App\Service\BSIService;
 use App\Service\ChartService;
 use App\Service\PDFService;
-use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 
@@ -46,7 +44,6 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
                                      ->setParameter($field, $value);
                     }
 
-                    $filterForm = $this->createForm(InfoCollaboratorsType::class, $serializer->denormalize([$field => $value], InfoCollaborators::class));
                 }
             }
 
@@ -63,7 +60,7 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
             'form' => $filterForm->createView(),
             'info_collaborators' => $pagination,
         ]);
-    }  
+    }    
 
     #[Route('/infoCollaboratorsRO/{id}', name: 'app_info_collaborators_read_only_show', methods: ['GET'])]
     public function show(InfoCollaborators $infoCollaborator): Response

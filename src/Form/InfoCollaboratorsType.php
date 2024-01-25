@@ -3,83 +3,70 @@
 namespace App\Form;
 
 use App\Entity\InfoCollaborators;
-use Symfony\Component\Form\Extension\Core\Type\DateType;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\InfoCollaboratorsRepository;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-use Symfony\Component\Serializer\Serializer;
-
-use function PHPUnit\Framework\isEmpty;
 
 class InfoCollaboratorsType extends AbstractType
 {
-    private $entityManager;
+    private $infoCollaboratorsRepository;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(InfoCollaboratorsRepository $infoCollaboratorsRepository)
     {
-        $this->entityManager = $entityManager;
+        $this->infoCollaboratorsRepository = $infoCollaboratorsRepository;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $infoRepository = $this->entityManager->getRepository(InfoCollaborators::class);
         $builder
             ->add('matricule', ChoiceType::class, [
                 'placeholder' => 'Choisir un matricule',
+                'choices' => $this->infoCollaboratorsRepository->findColumnOneByOne('matricule'),
                 'required' => false,
-                'choices' => $infoRepository->findColumnOneByOne('matricule'),
             ])
             ->add('name', ChoiceType::class, [
                 'placeholder' => 'Choisir un name',
+                'choices' => $this->infoCollaboratorsRepository->findColumnOneByOne('name'),
                 'required' => false,
-                'choices' => $infoRepository->findColumnOneByOne('name'),
             ])
             ->add('firstname', ChoiceType::class, [
                 'placeholder' => 'Choisir un firstname',
+                'choices' => $this->infoCollaboratorsRepository->findColumnOneByOne('firstname'),
                 'required' => false,
-                'choices' => $infoRepository->findColumnOneByOne('firstname'),
             ])
             ->add('position', ChoiceType::class, [
                 'placeholder' => 'Choisir un position',
+                'choices' => $this->infoCollaboratorsRepository->findColumnOneByOne('position'),
                 'required' => false,
-                'choices' => $infoRepository->findColumnOneByOne('position'),
             ])
             ->add('csp', ChoiceType::class, [
                 'placeholder' => 'Choisir un csp',
+                'choices' => $this->infoCollaboratorsRepository->findColumnOneByOne('csp'),
                 'required' => false,
-                'choices' => $infoRepository->findColumnOneByOne('csp'),
             ])
         ;
 
-        $builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
-            $form = $event->getForm();
-            $data = $event->getData();
-
-            if ($data) {
-                foreach ($data as $key => $value) {
-                    if($value == "") {
-                        $form->add($key, ChoiceType::class, [
-                            'choices' => $this->entityManager->getRepository(InfoCollaborators::class)->findColumnOneByOne($key, $data),
-                        ]);
-                    }
-                }
-            }
-        });
-
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event) {
-            $form = $event->getForm();
+            $tabChamp = ["matricule","name","firstname","position","csp"];
+
             $data = $event->getData();
-            if (empty($filterData)) {
-                foreach ($data as $key => $value) {
-                    if($value == "") {
-                        $form->add($key, ChoiceType::class, [
-                            'choices' => $this->entityManager->getRepository(InfoCollaborators::class)->findColumnOneByOne($key, $data),
-                        ]);
+            $form = $event->getForm();
+            
+            foreach ($data as $dataKey => $dataValue) {
+                if ($dataValue !== "") {
+
+                    foreach ($tabChamp as $tabChampKey => $tabChampValue) {
+                        if ($tabChampValue !== $dataKey) {
+                            $form->add($tabChampValue, ChoiceType::class, [
+                                'placeholder' => 'Choisir un '.$tabChampValue,
+                                'choices' => $this->infoCollaboratorsRepository->findColumnOneByOne($tabChampValue, $data),
+                                'required' => false,
+                            ]);
+                        }
                     }
                 }
             }

@@ -39,13 +39,17 @@ class InfoCollaboratorsRepository extends ServiceEntityRepository
 
         if (!empty($parameters)) {
             foreach ($parameters as $key => $value) {
-                $query->andWhere('i.' . $key . ' = :' . $key)
-                    ->setParameter(':' . $key, $value);
+                if($value !== '') {
+                    $query->andWhere('i.' . $key . ' = :' . $key)
+                        ->setParameter(':' . $key, $value);
+                }
             }
         }
+
+        $query->orderBy('i.' . $column, 'ASC');
         
-        $result = $query->getQuery()->getResult();
-    
+        $result = $query->getQuery()->getScalarResult();
+        
         return array_column($result, $column, $column);
     }
 
