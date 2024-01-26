@@ -49,7 +49,6 @@ class InfoCollaboratorsRepository extends ServiceEntityRepository
         $query->orderBy('i.' . $column, 'ASC');
         
         $result = $query->getQuery()->getScalarResult();
-        
         return array_column($result, $column, $column);
     }
 

@@ -31,23 +31,28 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
 
         $queryBuilder = $infoCollaboratorsRepository->paginationQuery();
 
-        if ($filterForm->isSubmitted() && $filterForm->isValid()) {
-            
-            $filterData = $serializer->normalize($filterForm->getData());
-            foreach ($filterData as $field => $value) {
-                if ($value !== null && $value !== '') {
-                    if ($value instanceof \DateTimeInterface) {
-                        $queryBuilder->andWhere("i.$field = :$field")
-                                     ->setParameter($field, $value->format('Y-m-d'));
-                    } else {
-                        $queryBuilder->andWhere("i.$field = :$field")
-                                     ->setParameter($field, $value);
-                    }
+        if ($filterForm->isSubmitted()) {
+                
+            if ($filterForm->get('reset')->isClicked()) {
+                return $this->redirectToRoute('app_info_collaborators_read_only_index');
+            } elseif ($filterForm->isValid()) {
+                $filterData = $serializer->normalize($filterForm->getData());
+                foreach ($filterData as $field => $value) {
+                    if ($value !== null && $value !== '') {
+                        if ($value instanceof \DateTimeInterface) {
+                            $queryBuilder->andWhere("i.$field = :$field")
+                                        ->setParameter($field, $value->format('Y-m-d'));
+                        } else {
+                            $queryBuilder->andWhere("i.$field = :$field")
+                                        ->setParameter($field, $value);
+                        }
 
+                    }
                 }
             }
-
         }
+            
+        $all_collaborators = $queryBuilder->getQuery()->getResult();
 
         $pagination = $paginator->paginate(
             $queryBuilder->getQuery(),
@@ -56,7 +61,7 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
         );
 
         return $this->render('info_collaborators_read_only/index.html.twig', [
-            'all_collaborators' => $infoCollaboratorsRepository->findAll(),
+            'all_collaborators' => $all_collaborators,
             'form' => $filterForm->createView(),
             'info_collaborators' => $pagination,
         ]);
@@ -77,6 +82,10 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
         set_time_limit(0);
         ini_set('memory_limit', '10000M');
 
+        
+        $filterForm = $this->createForm(InfoCollaboratorsType::class);
+        $filterForm->handleRequest($request);
+
         $dataImage1 = $request->request->get('image1');
         $dataImage2 = $request->request->get('image2');
         $dataImage3 = $request->request->get('image3'); 
@@ -87,6 +96,7 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
         $chart->downloadDataImage($dataImage2, 'chartImage', 'BarChartProtection'.$matricule, 'png');
         $chart->downloadDataImage($dataImage3, 'chartImage', 'PieChartProtection'.$matricule, 'png');
             
+        $all_collaborators = $infoCollaboratorsRepository->paginationQuery()->getQuery()->getResult();
 
         $pagination = $paginator->paginate(
             $infoCollaboratorsRepository->paginationQuery(),
@@ -94,7 +104,8 @@ class InfoCollaboratorsReadOnlyController extends AbstractController
             100
         );
         return $this->render('info_collaborators_read_only/index.html.twig', [
-            'all_collaborators' => $infoCollaboratorsRepository->findAll(),
+            'all_collaborators' => $all_collaborators,
+            'form' => $filterForm->createView(),
             'info_collaborators' => $pagination,
         ]);
     }

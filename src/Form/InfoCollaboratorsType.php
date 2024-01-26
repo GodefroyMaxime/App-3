@@ -5,6 +5,7 @@ namespace App\Form;
 use App\Entity\InfoCollaborators;
 use App\Repository\InfoCollaboratorsRepository;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
@@ -48,17 +49,23 @@ class InfoCollaboratorsType extends AbstractType
                 'choices' => $this->infoCollaboratorsRepository->findColumnOneByOne('csp'),
                 'required' => false,
             ])
+            ->add('reset', SubmitType::class, [
+                'attr' => ['class' => 'reset-button'],
+                'label' => 'Réinitialiser',
+            ])
         ;
 
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event) {
-            $tabChamp = ["matricule","name","firstname","position","csp"];
 
             $data = $event->getData();
             $form = $event->getForm();
             
+            unset($data['reset']);
+
+            $tabChamp = array_keys($data);
+
             foreach ($data as $dataKey => $dataValue) {
                 if ($dataValue !== "") {
-
                     foreach ($tabChamp as $tabChampKey => $tabChampValue) {
                         if ($tabChampValue !== $dataKey) {
                             $form->add($tabChampValue, ChoiceType::class, [
