@@ -420,6 +420,11 @@ function processPages(btnId, nextPage, progressBarIndex, allMatricule) {
 
                 resolveProcessPage();
                 
+                
+
+                let url = new URL(location.href);
+                url.searchParams.set('page', 1);
+                window.location.href = url.href;
                 $(".progress").hide()
             })
             .catch((error) => {

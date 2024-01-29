@@ -5,6 +5,7 @@ namespace App\Form;
 use App\Entity\InfoCollaborators;
 use App\Repository\InfoCollaboratorsRepository;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -49,6 +50,12 @@ class InfoCollaboratorsType extends AbstractType
                 'choices' => $this->infoCollaboratorsRepository->findColumnOneByOne('csp'),
                 'required' => false,
             ])
+            // ->add('seniority', DateType::class, [
+            //     'placeholder' => 'Choisir un seniority',
+            //     'widget' => 'single_text',
+            //     'by_reference' => true,
+            //     'required' => false,
+            // ])
             ->add('reset', SubmitType::class, [
                 'attr' => ['class' => 'reset-button'],
                 'label' => 'Réinitialiser',
